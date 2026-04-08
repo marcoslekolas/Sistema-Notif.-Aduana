@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Aduana · Estado de despacho</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Archivo+Narrow:wght@400;500;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0c0d0f;
+  --surface: #141618;
+  --border:  #222428;
+  --text:    #eceef2;
+  --muted:   #5a5e68;
+  --sans:    'Archivo', sans-serif;
+  --narrow:  'Archivo Narrow', sans-serif;
+}
+
+html { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── PANTALLA FORMULARIO ── */
+#screen-form {
+  width: 100%;
+  max-width: 380px;
+  animation: fadeUp .4s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.form-header { margin-bottom: 32px; }
+
+.form-eyebrow {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pulse-dot {
+  width: 8px; height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+  50%       { opacity: .7; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+.form-eyebrow span {
+  font-family: var(--narrow);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: #22c55e;
+}
+
+.form-title {
+  font-size: 32px; font-weight: 900;
+  letter-spacing: -.5px; line-height: 1.05;
+  color: var(--text);
+}
+
+.form-title em {
+  font-style: normal;
+  color: var(--muted);
+  display: block;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-top: 6px;
+}
+
+.field { margin-bottom: 14px; }
+
+.field label {
+  display: block;
+  font-family: var(--narrow);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 7px;
+}
+
+.field input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  font-family: var(--narrow);
+  font-size: 22px; font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color .2s, box-shadow .2s;
+  caret-color: #3b82f6;
+}
+
+.field input::placeholder { color: #2a2d34; font-weight: 400; }
+
+.field input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+
+.field-hint {
+  margin-top: 5px;
+  font-size: 12px; color: var(--muted); font-weight: 400;
+}
+
+.btn-submit {
+  width: 100%; margin-top: 6px;
+  padding: 17px;
+  background: #3b82f6;
+  color: #fff; border: none; border-radius: 10px;
+  font-family: var(--narrow);
+  font-size: 15px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: background .15s, transform .1s;
+}
+
+.btn-submit:hover  { background: #2563eb; }
+.btn-submit:active { transform: scale(.99); }
+.btn-submit:disabled { background: #1e2128; color: var(--muted); cursor: not-allowed; }
+
+.spinner {
+  display: none;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.form-error {
+  margin-top: 12px; padding: 11px 14px;
+  background: rgba(239,68,68,.07);
+  border: 1px solid rgba(239,68,68,.2);
+  border-radius: 8px;
+  font-size: 13px; color: #f87171;
+  display: none;
+}
+
+/* ── PANTALLA ESTADO ── */
+#screen-estado {
+  display: none;
+  width: 100%; max-width: 420px;
+  text-align: center;
+  animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
+}
+
+.estado-mat {
+  font-family: var(--narrow);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.estado-card {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  padding: 40px 28px 36px;
+  position: relative;
+  overflow: hidden;
+  transition: background .6s, border-color .6s;
+}
+
+/* Estado: esperando */
+.estado-card.waiting {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Estado: verde */
+.estado-card.verde {
+  background: #052e16;
+  border-color: #166534;
+}
+
+/* Estado: naranja */
+.estado-card.naranja {
+  background: #1c0a00;
+  border-color: #92400e;
+}
+
+/* Estado: rojo */
+.estado-card.rojo {
+  background: #1c0506;
+  border-color: #991b1b;
+}
+
+/* Icono grande */
+.estado-icon {
+  font-size: 64px; line-height: 1;
+  margin-bottom: 20px;
+  display: block;
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+
+.estado-card.resolved .estado-icon {
+  animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.estado-titulo {
+  font-size: 26px; font-weight: 900;
+  letter-spacing: -.3px; line-height: 1.1;
+  margin-bottom: 10px;
+  transition: color .4s;
+}
+
+.waiting  .estado-titulo { color: var(--muted); }
+.verde    .estado-titulo { color: #4ade80; }
+.naranja  .estado-titulo { color: #fbbf24; }
+.rojo     .estado-titulo { color: #f87171; }
+
+.estado-desc {
+  font-size: 15px; font-weight: 400;
+  line-height: 1.55; color: var(--muted);
+  transition: color .4s;
+}
+
+.verde   .estado-desc { color: #86efac; }
+.naranja .estado-desc { color: #fde68a; }
+.rojo    .estado-desc { color: #fca5a5; }
+
+.hora-badge {
+  display: inline-block;
+  margin-top: 16px;
+  font-family: var(--narrow);
+  font-size: 28px; font-weight: 900;
+  letter-spacing: .04em;
+  color: #f87171;
+  background: rgba(239,68,68,.1);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: 10px;
+  padding: 8px 22px;
+}
+
+/* Indicador de espera animado */
+.waiting-dots {
+  display: flex; justify-content: center; gap: 6px;
+  margin: 20px 0 0;
+}
+
+.waiting-dots span {
+  width: 7px; height: 7px;
+  background: var(--border);
+  border-radius: 50%;
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.waiting-dots span:nth-child(2) { animation-delay: .2s; }
+.waiting-dots span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(.8); opacity: .4; }
+  40%           { transform: scale(1.2); opacity: 1; }
+}
+
+.waiting .waiting-dots { display: flex; }
+.resolved .waiting-dots { display: none; }
+
+/* Footer */
+.estado-footer {
+  margin-top: 24px;
+  font-size: 12px; color: #2a2d34;
+  font-family: var(--narrow);
+  letter-spacing: .04em;
+}
+
+/* Barra superior del estado */
+.estado-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.conexion-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--narrow);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: #22c55e;
+}
+
+.conexion-dot {
+  width: 5px; height: 5px;
+  background: #22c55e; border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.estado-num-label {
+  font-family: var(--narrow);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<!-- ── PANTALLA 1: FORMULARIO ── -->
+<div id="screen-form">
+  <div class="form-header">
+    <div class="form-eyebrow">
+      <div class="pulse-dot"></div>
+      <span>Sistema activo</span>
+    </div>
+    <div class="form-title">
+      Registro<br>de entrada
+      <em>Introduce tus datos para seguir el estado de tu despacho en esta misma pantalla</em>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Matrícula del vehículo</label>
+    <input type="text" id="inp-mat" placeholder="1234ABC" maxlength="12"
+      autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+      inputmode="text">
+    <div class="field-hint">Matrícula del camión o semirremolque</div>
+  </div>
+
+  <div class="field">
+    <label>Teléfono móvil</label>
+    <input type="tel" id="inp-tel" placeholder="612 000 000"
+      maxlength="15" autocomplete="tel" inputmode="tel">
+    <div class="field-hint">Solo para identificarte, no recibirás llamadas</div>
+  </div>
+
+  <div class="form-error" id="form-err"></div>
+
+  <button class="btn-submit" id="btn-reg" onclick="registrar()">
+    <div class="spinner" id="spinner"></div>
+    <span id="btn-txt">Registrar y ver estado</span>
+  </button>
+</div>
+
+
+<!-- ── PANTALLA 2: ESTADO EN TIEMPO REAL ── -->
+<div id="screen-estado">
+
+  <div class="estado-topbar">
+    <div class="conexion-pill">
+      <div class="conexion-dot"></div>
+      En directo
+    </div>
+    <div class="estado-num-label" id="estado-mat-top">—</div>
+  </div>
+
+  <div class="estado-card waiting" id="estado-card">
+
+    <span class="estado-icon" id="estado-icon">⏳</span>
+
+    <div class="estado-titulo" id="estado-titulo">Procesando tu despacho</div>
+
+    <div class="estado-desc" id="estado-desc">
+      Tu solicitud ha sido registrada.<br>
+      Esta pantalla se actualizará automáticamente cuando tengamos el resultado.
+    </div>
+
+    <div class="hora-badge" id="hora-badge" style="display:none"></div>
+
+    <div class="waiting-dots">
+      <span></span><span></span><span></span>
+    </div>
+
+  </div>
+
+  <div class="estado-footer">No cierres esta página · Se actualiza sola</div>
+
+</div>
+
+
+<script>
+// ─── CONFIGURACIÓN ────────────────────────────────────────────
+const SUPABASE_URL = 'https://aidkhuhthxtgwseqxejq.supabase.co';
+const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpZGtodWh0aHh0Z3dzZXF4ZWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTcwMDQsImV4cCI6MjA5MTIzMzAwNH0.9rMXoYgd9OzGYw7mPtRbuPtHZOjubMc8kZ0mSvawUyM';
+// ─────────────────────────────────────────────────────────────
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, ANON_KEY);
+
+let suscripcion = null;
+let despachoId  = null;
+
+// ── Formateo inputs ──
+document.getElementById('inp-mat').addEventListener('input', function() {
+  this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+});
+
+document.getElementById('inp-tel').addEventListener('input', function() {
+  this.value = this.value.replace(/[^0-9+\s]/g, '');
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') registrar(); });
+
+// ── REGISTRAR ──
+async function registrar() {
+  const mat = document.getElementById('inp-mat').value.trim();
+  const tel = document.getElementById('inp-tel').value.trim().replace(/\s/g, '');
+  const errEl = document.getElementById('form-err');
+  errEl.style.display = 'none';
+
+  if (mat.length < 4) {
+    mostrarError('Introduce una matrícula válida.'); return;
+  }
+  if (tel.replace(/[^0-9]/g, '').length < 9) {
+    mostrarError('Introduce un número de teléfono válido.'); return;
+  }
+
+  let telefono = tel;
+  if (!telefono.startsWith('+')) telefono = '+34' + telefono;
+
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/despachos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        matricula:    mat,
+        telefono,
+        estado:       'pendiente',
+        circuito:     null,
+        hora_entrada: new Date().toISOString()
+      })
+    });
+
+    if (!res.ok) throw new Error();
+
+    const data = await res.json();
+    despachoId = data[0]?.id;
+
+    if (!despachoId) throw new Error('Sin ID');
+
+    // Mostrar pantalla de estado y suscribirse
+    document.getElementById('screen-form').style.display   = 'none';
+    document.getElementById('screen-estado').style.display = 'block';
+    document.getElementById('estado-mat-top').textContent  = mat;
+
+    suscribirEstado(despachoId);
+
+  } catch {
+    mostrarError('No se pudo registrar. Inténtalo de nuevo o acude a la ventanilla.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── SUSCRIPCIÓN REALTIME ──
+function suscribirEstado(id) {
+  // Canal Realtime: escucha cambios en la fila concreta de este despacho
+  suscripcion = sb.channel(`despacho-${id}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'despachos',
+        filter: `id=eq.${id}`
+      },
+      payload => {
+        actualizarPantalla(payload.new);
+      }
+    )
+    .subscribe();
+}
+
+// ── ACTUALIZAR PANTALLA ──
+function actualizarPantalla(despacho) {
+  const c = despacho.circuito;
+  if (!c) return;
+
+  const card    = document.getElementById('estado-card');
+  const icon    = document.getElementById('estado-icon');
+  const titulo  = document.getElementById('estado-titulo');
+  const desc    = document.getElementById('estado-desc');
+  const horaBdg = document.getElementById('hora-badge');
+
+  card.classList.remove('waiting', 'verde', 'naranja', 'rojo');
+  card.classList.add('resolved');
+  horaBdg.style.display = 'none';
+
+  if (c === 'verde') {
+    card.classList.add('verde');
+    icon.textContent  = '✅';
+    titulo.textContent = 'Despacho completado';
+    desc.textContent  = 'Tu vehículo ha sido despachado. Puedes proceder a la salida.';
+
+  } else if (c === 'naranja') {
+    card.classList.add('naranja');
+    icon.textContent  = '⏳';
+    titulo.textContent = 'Trámite en administración';
+    desc.textContent  = 'Tu despacho está siendo revisado por administración. Permanece en el área de espera.';
+
+  } else if (c === 'rojo-10' || c === 'rojo-12' || c === 'rojo-14') {
+    const hora = c.split('-')[1] + ':00h';
+    card.classList.add('rojo');
+    icon.textContent  = '🔴';
+    titulo.textContent = 'Inspección física requerida';
+    desc.textContent  = 'Tu vehículo ha sido seleccionado para inspección física. Dirígete al punto de control a la hora indicada.';
+    horaBdg.textContent   = hora;
+    horaBdg.style.display = 'inline-block';
+  }
+
+  // Vibrar el móvil si está disponible
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+// ── HELPERS ──
+function mostrarError(msg) {
+  const e = document.getElementById('form-err');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+
+function setLoading(on) {
+  document.getElementById('btn-reg').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btn-txt').textContent   = on ? 'Registrando…' : 'Registrar y ver estado';
+}
+</script>
+</body>
+</html>
