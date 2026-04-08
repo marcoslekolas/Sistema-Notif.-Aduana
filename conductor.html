@@ -6,354 +6,125 @@
 <title>Aduana · Estado de despacho</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Archivo+Narrow:wght@400;500;700&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg:      #0c0d0f;
-  --surface: #141618;
-  --border:  #222428;
-  --text:    #eceef2;
-  --muted:   #5a5e68;
-  --sans:    'Archivo', sans-serif;
-  --narrow:  'Archivo Narrow', sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Archivo+Narrow:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0d0f;--surface:#141618;--border:#222428;
+  --text:#eceef2;--muted:#5a5e68;
+  --sans:'Archivo',sans-serif;--narrow:'Archivo Narrow',sans-serif;
 }
+html{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;-webkit-font-smoothing:antialiased}
 
-html { height: 100%; }
+/* ── SELECTOR IDIOMA ── */
+.lang-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:28px;width:100%;max-width:380px}
+.lang-btn{padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--muted);font-family:var(--narrow);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.lang-btn:hover{border-color:#3b82f6;color:#3b82f6}
+.lang-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 20px;
-  -webkit-font-smoothing: antialiased;
-}
+/* ── FORMULARIO ── */
+#screen-form{width:100%;max-width:380px;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.form-header{margin-bottom:28px}
+.form-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.pulse-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.form-eyebrow span{font-family:var(--narrow);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#22c55e}
+.form-title{font-size:30px;font-weight:900;letter-spacing:-.5px;line-height:1.05;color:var(--text)}
+.form-title em{font-style:normal;color:var(--muted);display:block;font-weight:400;font-size:14px;letter-spacing:0;line-height:1.4;margin-top:8px}
+.field{margin-bottom:14px}
+.field label{display:block;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.tel-wrap{display:flex;gap:8px}
+.prefix-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 14px;font-family:var(--narrow);font-size:18px;font-weight:700;color:var(--muted);white-space:nowrap;flex-shrink:0;min-width:72px;text-align:center;transition:border-color .2s}
+.field input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-family:var(--narrow);font-size:22px;font-weight:700;letter-spacing:.06em;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .2s,box-shadow .2s;caret-color:#3b82f6}
+.field input::placeholder{color:#2a2d34;font-weight:400}
+.field input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.tel-input{flex:1}
+.field-hint{margin-top:5px;font-size:12px;color:var(--muted);font-weight:400}
+.btn-submit{width:100%;margin-top:6px;padding:17px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-family:var(--narrow);font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s,transform .1s}
+.btn-submit:hover{background:#2563eb}.btn-submit:active{transform:scale(.99)}.btn-submit:disabled{background:#1e2128;color:var(--muted);cursor:not-allowed}
+.spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.form-error{margin-top:12px;padding:11px 14px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:13px;color:#f87171;display:none}
 
-/* ── PANTALLA FORMULARIO ── */
-#screen-form {
-  width: 100%;
-  max-width: 380px;
-  animation: fadeUp .4s cubic-bezier(.22,1,.36,1) both;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: none; }
-}
-
-.form-header { margin-bottom: 32px; }
-
-.form-eyebrow {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 14px;
-}
-
-.pulse-dot {
-  width: 8px; height: 8px;
-  background: #22c55e;
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
-  50%       { opacity: .7; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
-}
-
-.form-eyebrow span {
-  font-family: var(--narrow);
-  font-size: 11px; font-weight: 700;
-  letter-spacing: .16em; text-transform: uppercase;
-  color: #22c55e;
-}
-
-.form-title {
-  font-size: 32px; font-weight: 900;
-  letter-spacing: -.5px; line-height: 1.05;
-  color: var(--text);
-}
-
-.form-title em {
-  font-style: normal;
-  color: var(--muted);
-  display: block;
-  font-weight: 500;
-  font-size: 15px;
-  letter-spacing: 0;
-  line-height: 1;
-  margin-top: 6px;
-}
-
-.field { margin-bottom: 14px; }
-
-.field label {
-  display: block;
-  font-family: var(--narrow);
-  font-size: 10px; font-weight: 700;
-  letter-spacing: .14em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 7px;
-}
-
-.field input {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 18px;
-  font-family: var(--narrow);
-  font-size: 22px; font-weight: 700;
-  letter-spacing: .06em;
-  color: var(--text);
-  outline: none;
-  -webkit-appearance: none;
-  transition: border-color .2s, box-shadow .2s;
-  caret-color: #3b82f6;
-}
-
-.field input::placeholder { color: #2a2d34; font-weight: 400; }
-
-.field input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.1);
-}
-
-.field-hint {
-  margin-top: 5px;
-  font-size: 12px; color: var(--muted); font-weight: 400;
-}
-
-.btn-submit {
-  width: 100%; margin-top: 6px;
-  padding: 17px;
-  background: #3b82f6;
-  color: #fff; border: none; border-radius: 10px;
-  font-family: var(--narrow);
-  font-size: 15px; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: background .15s, transform .1s;
-}
-
-.btn-submit:hover  { background: #2563eb; }
-.btn-submit:active { transform: scale(.99); }
-.btn-submit:disabled { background: #1e2128; color: var(--muted); cursor: not-allowed; }
-
-.spinner {
-  display: none;
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.2);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.form-error {
-  margin-top: 12px; padding: 11px 14px;
-  background: rgba(239,68,68,.07);
-  border: 1px solid rgba(239,68,68,.2);
-  border-radius: 8px;
-  font-size: 13px; color: #f87171;
-  display: none;
-}
-
-/* ── PANTALLA ESTADO ── */
-#screen-estado {
-  display: none;
-  width: 100%; max-width: 420px;
-  text-align: center;
-  animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
-}
-
-.estado-mat {
-  font-family: var(--narrow);
-  font-size: 13px; font-weight: 700;
-  letter-spacing: .16em; text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 28px;
-}
-
-.estado-card {
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  padding: 40px 28px 36px;
-  position: relative;
-  overflow: hidden;
-  transition: background .6s, border-color .6s;
-}
-
-/* Estado: esperando */
-.estado-card.waiting {
-  background: var(--surface);
-  border-color: var(--border);
-}
-
-/* Estado: verde */
-.estado-card.verde {
-  background: #052e16;
-  border-color: #166534;
-}
-
-/* Estado: naranja */
-.estado-card.naranja {
-  background: #1c0a00;
-  border-color: #92400e;
-}
-
-/* Estado: rojo */
-.estado-card.rojo {
-  background: #1c0506;
-  border-color: #991b1b;
-}
-
-/* Icono grande */
-.estado-icon {
-  font-size: 64px; line-height: 1;
-  margin-bottom: 20px;
-  display: block;
-  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
-}
-
-.estado-card.resolved .estado-icon {
-  animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
-}
-
-@keyframes popIn {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-.estado-titulo {
-  font-size: 26px; font-weight: 900;
-  letter-spacing: -.3px; line-height: 1.1;
-  margin-bottom: 10px;
-  transition: color .4s;
-}
-
-.waiting  .estado-titulo { color: var(--muted); }
-.verde    .estado-titulo { color: #4ade80; }
-.naranja  .estado-titulo { color: #fbbf24; }
-.rojo     .estado-titulo { color: #f87171; }
-
-.estado-desc {
-  font-size: 15px; font-weight: 400;
-  line-height: 1.55; color: var(--muted);
-  transition: color .4s;
-}
-
-.verde   .estado-desc { color: #86efac; }
-.naranja .estado-desc { color: #fde68a; }
-.rojo    .estado-desc { color: #fca5a5; }
-
-.hora-badge {
-  display: inline-block;
-  margin-top: 16px;
-  font-family: var(--narrow);
-  font-size: 28px; font-weight: 900;
-  letter-spacing: .04em;
-  color: #f87171;
-  background: rgba(239,68,68,.1);
-  border: 1px solid rgba(239,68,68,.25);
-  border-radius: 10px;
-  padding: 8px 22px;
-}
-
-/* Indicador de espera animado */
-.waiting-dots {
-  display: flex; justify-content: center; gap: 6px;
-  margin: 20px 0 0;
-}
-
-.waiting-dots span {
-  width: 7px; height: 7px;
-  background: var(--border);
-  border-radius: 50%;
-  animation: dotPulse 1.4s ease-in-out infinite;
-}
-
-.waiting-dots span:nth-child(2) { animation-delay: .2s; }
-.waiting-dots span:nth-child(3) { animation-delay: .4s; }
-
-@keyframes dotPulse {
-  0%, 80%, 100% { transform: scale(.8); opacity: .4; }
-  40%           { transform: scale(1.2); opacity: 1; }
-}
-
-.waiting .waiting-dots { display: flex; }
-.resolved .waiting-dots { display: none; }
-
-/* Footer */
-.estado-footer {
-  margin-top: 24px;
-  font-size: 12px; color: #2a2d34;
-  font-family: var(--narrow);
-  letter-spacing: .04em;
-}
-
-/* Barra superior del estado */
-.estado-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.conexion-pill {
-  display: flex; align-items: center; gap: 5px;
-  font-family: var(--narrow);
-  font-size: 10px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: #22c55e;
-}
-
-.conexion-dot {
-  width: 5px; height: 5px;
-  background: #22c55e; border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.estado-num-label {
-  font-family: var(--narrow);
-  font-size: 10px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--muted);
-}
+/* ── ESTADO ── */
+#screen-estado{display:none;width:100%;max-width:420px;text-align:center;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.estado-mat{font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+.estado-card{border-radius:20px;border:1px solid var(--border);padding:40px 28px 36px;position:relative;overflow:hidden;transition:background .6s,border-color .6s}
+.estado-card.waiting{background:var(--surface);border-color:var(--border)}
+.estado-card.verde{background:#052e16;border-color:#166534}
+.estado-card.naranja{background:#1c0a00;border-color:#92400e}
+.estado-card.rojo{background:#1c0506;border-color:#991b1b}
+.estado-icon{font-size:64px;line-height:1;margin-bottom:20px;display:block;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.estado-card.resolved .estado-icon{animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.estado-titulo{font-size:24px;font-weight:900;letter-spacing:-.3px;line-height:1.1;margin-bottom:10px;transition:color .4s}
+.waiting .estado-titulo{color:var(--muted)}
+.verde .estado-titulo{color:#4ade80}
+.naranja .estado-titulo{color:#fbbf24}
+.rojo .estado-titulo{color:#f87171}
+.estado-desc{font-size:15px;font-weight:400;line-height:1.55;color:var(--muted);transition:color .4s}
+.verde .estado-desc{color:#86efac}
+.naranja .estado-desc{color:#fde68a}
+.rojo .estado-desc{color:#fca5a5}
+.hora-badge{display:inline-block;margin-top:16px;font-family:var(--narrow);font-size:28px;font-weight:900;letter-spacing:.04em;color:#f87171;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:8px 22px}
+.waiting-dots{display:flex;justify-content:center;gap:6px;margin:20px 0 0}
+.waiting-dots span{width:7px;height:7px;background:var(--border);border-radius:50%;animation:dotPulse 1.4s ease-in-out infinite}
+.waiting-dots span:nth-child(2){animation-delay:.2s}
+.waiting-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1.2);opacity:1}}
+.waiting .waiting-dots{display:flex}.resolved .waiting-dots{display:none}
+.estado-footer{margin-top:24px;font-size:12px;color:#2a2d34;font-family:var(--narrow);letter-spacing:.04em}
+.estado-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.conexion-pill{display:flex;align-items:center;gap:5px;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#22c55e}
+.conexion-dot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.estado-num-label{font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 </style>
 </head>
 <body>
 
-<!-- ── PANTALLA 1: FORMULARIO ── -->
+<!-- SELECTOR DE IDIOMA -->
+<div class="lang-bar" id="lang-bar">
+  <button class="lang-btn active" onclick="setLang('es')">🇪🇸 Español</button>
+  <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+  <button class="lang-btn" onclick="setLang('fr')">🇫🇷 Français</button>
+  <button class="lang-btn" onclick="setLang('pt')">🇵🇹 Português</button>
+  <button class="lang-btn" onclick="setLang('ro')">🇷🇴 Română</button>
+  <button class="lang-btn" onclick="setLang('pl')">🇵🇱 Polski</button>
+  <button class="lang-btn" onclick="setLang('de')">🇩🇪 Deutsch</button>
+  <button class="lang-btn" onclick="setLang('it')">🇮🇹 Italiano</button>
+  <button class="lang-btn" onclick="setLang('lt')">🇱🇹 Lietuvių</button>
+  <button class="lang-btn" onclick="setLang('ru')">🇷🇺 Русский</button>
+</div>
+
+<!-- FORMULARIO -->
 <div id="screen-form">
   <div class="form-header">
     <div class="form-eyebrow">
       <div class="pulse-dot"></div>
-      <span>Sistema activo</span>
+      <span id="txt-activo">Sistema activo</span>
     </div>
     <div class="form-title">
-      Registro<br>de entrada
-      <em>Introduce tus datos para seguir el estado de tu despacho en esta misma pantalla</em>
+      <span id="txt-titulo">Registro de entrada</span>
+      <em id="txt-subtitulo">Introduce tus datos para seguir el estado de tu despacho en esta misma pantalla</em>
     </div>
   </div>
 
   <div class="field">
-    <label>Matrícula del vehículo</label>
+    <label id="lbl-mat">Matrícula del vehículo</label>
     <input type="text" id="inp-mat" placeholder="1234ABC" maxlength="12"
-      autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
-      inputmode="text">
-    <div class="field-hint">Matrícula del camión o semirremolque</div>
+      autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text">
+    <div class="field-hint" id="hint-mat">Matrícula del camión o semirremolque</div>
   </div>
 
   <div class="field">
-    <label>Teléfono móvil</label>
-    <input type="tel" id="inp-tel" placeholder="612 000 000"
-      maxlength="15" autocomplete="tel" inputmode="tel">
-    <div class="field-hint">Solo para identificarte, no recibirás llamadas</div>
+    <label id="lbl-tel">Teléfono móvil</label>
+    <div class="tel-wrap">
+      <div class="prefix-box" id="prefix-box">+34</div>
+      <input type="tel" id="inp-tel" placeholder="612 000 000"
+        maxlength="13" autocomplete="tel" inputmode="tel" class="tel-input">
+    </div>
+    <div class="field-hint" id="hint-tel">Solo para identificarte, no recibirás llamadas</div>
   </div>
 
   <div class="form-error" id="form-err"></div>
@@ -364,81 +135,362 @@ body {
   </button>
 </div>
 
-
-<!-- ── PANTALLA 2: ESTADO EN TIEMPO REAL ── -->
+<!-- ESTADO EN TIEMPO REAL -->
 <div id="screen-estado">
-
   <div class="estado-topbar">
     <div class="conexion-pill">
       <div class="conexion-dot"></div>
-      En directo
+      <span id="txt-endirecto">En directo</span>
     </div>
     <div class="estado-num-label" id="estado-mat-top">—</div>
   </div>
 
   <div class="estado-card waiting" id="estado-card">
-
     <span class="estado-icon" id="estado-icon">⏳</span>
-
-    <div class="estado-titulo" id="estado-titulo">Procesando tu despacho</div>
-
-    <div class="estado-desc" id="estado-desc">
-      Tu solicitud ha sido registrada.<br>
-      Esta pantalla se actualizará automáticamente cuando tengamos el resultado.
-    </div>
-
-    <div class="hora-badge" id="hora-badge" style="display:none"></div>
-
-    <div class="waiting-dots">
-      <span></span><span></span><span></span>
-    </div>
-
+    <div class="estado-titulo" id="estado-titulo"></div>
+    <div class="estado-desc"   id="estado-desc"></div>
+    <div class="hora-badge"    id="hora-badge" style="display:none"></div>
+    <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 
-  <div class="estado-footer">No cierres esta página · Se actualiza sola</div>
-
+  <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
 </div>
 
-
 <script>
-// ─── CONFIGURACIÓN ────────────────────────────────────────────
 const SUPABASE_URL = 'https://aidkhuhthxtgwseqxejq.supabase.co';
 const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpZGtodWh0aHh0Z3dzZXF4ZWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTcwMDQsImV4cCI6MjA5MTIzMzAwNH0.9rMXoYgd9OzGYw7mPtRbuPtHZOjubMc8kZ0mSvawUyM';
-// ─────────────────────────────────────────────────────────────
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, ANON_KEY);
 
 let suscripcion = null;
 let despachoId  = null;
+let idiomaActual = 'es';
 
-// ── Formateo inputs ──
+// ── TRADUCCIONES ──
+const T = {
+  es: {
+    activo:    'Sistema activo',
+    titulo:    'Registro de entrada',
+    subtitulo: 'Introduce tus datos para seguir el estado de tu despacho en esta misma pantalla',
+    lbl_mat:   'Matrícula del vehículo',
+    hint_mat:  'Matrícula del camión o semirremolque',
+    lbl_tel:   'Teléfono móvil',
+    hint_tel:  'Solo para identificarte, no recibirás llamadas',
+    btn:       'Registrar y ver estado',
+    registrando: 'Registrando…',
+    err_mat:   'Introduce una matrícula válida.',
+    err_tel:   'Introduce un número de teléfono válido.',
+    err_gen:   'No se pudo registrar. Inténtalo de nuevo o acude a la ventanilla.',
+    endirecto: 'En directo',
+    footer:    'No cierres esta página · Se actualiza sola',
+    esperando_titulo: 'Procesando tu despacho',
+    esperando_desc:   'Tu solicitud ha sido registrada. Esta pantalla se actualizará automáticamente cuando tengamos el resultado.',
+    verde_titulo:  'Despacho completado',
+    verde_desc:    'Tu vehículo ha sido despachado. Puedes pasar a recoger la documentación para la salida.',
+    naranja_titulo: 'Pendiente de autorización',
+    naranja_desc:   'Tu despacho está pendiente de autorización por parte del técnico de aduanas. Permanece en el área de espera.',
+    rojo_titulo:   'Inspección física requerida',
+    rojo_desc:     'Tu vehículo ha sido seleccionado para inspección física. Dirígete al punto de control a la hora indicada.',
+    prefix: '+34',
+  },
+  en: {
+    activo:    'System active',
+    titulo:    'Entry registration',
+    subtitulo: 'Enter your details to track your customs clearance status on this screen',
+    lbl_mat:   'Vehicle registration plate',
+    hint_mat:  'Truck or semi-trailer plate',
+    lbl_tel:   'Mobile phone',
+    hint_tel:  'For identification only, no calls will be made',
+    btn:       'Register and view status',
+    registrando: 'Registering…',
+    err_mat:   'Please enter a valid plate number.',
+    err_tel:   'Please enter a valid phone number.',
+    err_gen:   'Could not register. Please try again or go to the counter.',
+    endirecto: 'Live',
+    footer:    'Do not close this page · It updates automatically',
+    esperando_titulo: 'Processing your clearance',
+    esperando_desc:   'Your request has been registered. This screen will update automatically when we have a result.',
+    verde_titulo:  'Clearance completed',
+    verde_desc:    'Your vehicle has been cleared. You may proceed to collect the exit documentation.',
+    naranja_titulo: 'Pending authorisation',
+    naranja_desc:   'Your clearance is pending authorisation by the customs officer. Please remain in the waiting area.',
+    rojo_titulo:   'Physical inspection required',
+    rojo_desc:     'Your vehicle has been selected for physical inspection. Please report to the inspection point at the indicated time.',
+    prefix: '+44',
+  },
+  fr: {
+    activo:    'Système actif',
+    titulo:    'Enregistrement d\'entrée',
+    subtitulo: 'Entrez vos données pour suivre l\'état de votre dédouanement sur cet écran',
+    lbl_mat:   'Immatriculation du véhicule',
+    hint_mat:  'Plaque du camion ou semi-remorque',
+    lbl_tel:   'Téléphone portable',
+    hint_tel:  'Uniquement pour vous identifier, aucun appel ne sera passé',
+    btn:       'S\'enregistrer et voir l\'état',
+    registrando: 'Enregistrement…',
+    err_mat:   'Veuillez entrer une immatriculation valide.',
+    err_tel:   'Veuillez entrer un numéro de téléphone valide.',
+    err_gen:   'Impossible d\'enregistrer. Réessayez ou allez au guichet.',
+    endirecto: 'En direct',
+    footer:    'Ne fermez pas cette page · Elle se met à jour automatiquement',
+    esperando_titulo: 'Traitement en cours',
+    esperando_desc:   'Votre demande a été enregistrée. Cet écran se mettra à jour automatiquement dès que nous aurons un résultat.',
+    verde_titulo:  'Dédouanement terminé',
+    verde_desc:    'Votre véhicule a été dédouané. Vous pouvez récupérer la documentation de sortie.',
+    naranja_titulo: 'En attente d\'autorisation',
+    naranja_desc:   'Votre dédouanement est en attente d\'autorisation par l\'agent des douanes. Veuillez rester dans la zone d\'attente.',
+    rojo_titulo:   'Inspection physique requise',
+    rojo_desc:     'Votre véhicule a été sélectionné pour une inspection physique. Présentez-vous au point de contrôle à l\'heure indiquée.',
+    prefix: '+33',
+  },
+  pt: {
+    activo:    'Sistema ativo',
+    titulo:    'Registo de entrada',
+    subtitulo: 'Introduza os seus dados para acompanhar o estado do seu despacho neste ecrã',
+    lbl_mat:   'Matrícula do veículo',
+    hint_mat:  'Matrícula do camião ou semi-reboque',
+    lbl_tel:   'Telemóvel',
+    hint_tel:  'Apenas para identificação, não receberá chamadas',
+    btn:       'Registar e ver estado',
+    registrando: 'A registar…',
+    err_mat:   'Introduza uma matrícula válida.',
+    err_tel:   'Introduza um número de telefone válido.',
+    err_gen:   'Não foi possível registar. Tente novamente ou dirija-se ao balcão.',
+    endirecto: 'Em direto',
+    footer:    'Não feche esta página · Atualiza automaticamente',
+    esperando_titulo: 'A processar o seu despacho',
+    esperando_desc:   'O seu pedido foi registado. Este ecrã será atualizado automaticamente quando tivermos um resultado.',
+    verde_titulo:  'Despacho concluído',
+    verde_desc:    'O seu veículo foi despachado. Pode ir levantar a documentação de saída.',
+    naranja_titulo: 'Aguarda autorização',
+    naranja_desc:   'O seu despacho aguarda autorização do técnico aduaneiro. Por favor, permaneça na área de espera.',
+    rojo_titulo:   'Inspeção física necessária',
+    rojo_desc:     'O seu veículo foi selecionado para inspeção física. Dirija-se ao ponto de controlo à hora indicada.',
+    prefix: '+351',
+  },
+  ro: {
+    activo:    'Sistem activ',
+    titulo:    'Înregistrare intrare',
+    subtitulo: 'Introduceți datele pentru a urmări starea vămuirii pe acest ecran',
+    lbl_mat:   'Numărul de înmatriculare',
+    hint_mat:  'Numărul camionului sau semiremorcii',
+    lbl_tel:   'Telefon mobil',
+    hint_tel:  'Doar pentru identificare, nu veți primi apeluri',
+    btn:       'Înregistrați și vedeți starea',
+    registrando: 'Se înregistrează…',
+    err_mat:   'Introduceți un număr de înmatriculare valid.',
+    err_tel:   'Introduceți un număr de telefon valid.',
+    err_gen:   'Înregistrarea a eșuat. Încercați din nou sau mergeți la ghișeu.',
+    endirecto: 'În direct',
+    footer:    'Nu închideți această pagină · Se actualizează automat',
+    esperando_titulo: 'Se procesează vămuirea',
+    esperando_desc:   'Cererea dvs. a fost înregistrată. Acest ecran se va actualiza automat când vom avea un rezultat.',
+    verde_titulo:  'Vămuire finalizată',
+    verde_desc:    'Vehiculul dvs. a fost vamat. Puteți ridica documentația de ieșire.',
+    naranja_titulo: 'În așteptarea autorizației',
+    naranja_desc:   'Vămuirea dvs. așteaptă autorizarea din partea ofițerului vamal. Vă rugăm să rămâneți în zona de așteptare.',
+    rojo_titulo:   'Inspecție fizică necesară',
+    rojo_desc:     'Vehiculul dvs. a fost selectat pentru inspecție fizică. Prezentați-vă la punctul de control la ora indicată.',
+    prefix: '+40',
+  },
+  pl: {
+    activo:    'System aktywny',
+    titulo:    'Rejestracja wjazdu',
+    subtitulo: 'Wprowadź swoje dane, aby śledzić status odprawy celnej na tym ekranie',
+    lbl_mat:   'Numer rejestracyjny pojazdu',
+    hint_mat:  'Numer rejestracyjny ciężarówki lub naczepy',
+    lbl_tel:   'Telefon komórkowy',
+    hint_tel:  'Tylko do identyfikacji, nie będziesz otrzymywać połączeń',
+    btn:       'Zarejestruj i sprawdź status',
+    registrando: 'Rejestrowanie…',
+    err_mat:   'Wprowadź prawidłowy numer rejestracyjny.',
+    err_tel:   'Wprowadź prawidłowy numer telefonu.',
+    err_gen:   'Nie można zarejestrować. Spróbuj ponownie lub podejdź do okienka.',
+    endirecto: 'Na żywo',
+    footer:    'Nie zamykaj tej strony · Aktualizuje się automatycznie',
+    esperando_titulo: 'Przetwarzanie odprawy',
+    esperando_desc:   'Twoje zgłoszenie zostało zarejestrowane. Ten ekran zaktualizuje się automatycznie, gdy będziemy mieć wynik.',
+    verde_titulo:  'Odprawa zakończona',
+    verde_desc:    'Twój pojazd został odprawiony. Możesz odebrać dokumentację wyjazdową.',
+    naranja_titulo: 'Oczekiwanie na autoryzację',
+    naranja_desc:   'Twoja odprawa oczekuje na autoryzację przez urzędnika celnego. Proszę pozostać w strefie oczekiwania.',
+    rojo_titulo:   'Wymagana kontrola fizyczna',
+    rojo_desc:     'Twój pojazd został wybrany do kontroli fizycznej. Proszę zgłosić się do punktu kontrolnego o wskazanej godzinie.',
+    prefix: '+48',
+  },
+  de: {
+    activo:    'System aktiv',
+    titulo:    'Einreiseregistrierung',
+    subtitulo: 'Geben Sie Ihre Daten ein, um den Status Ihrer Zollabfertigung auf diesem Bildschirm zu verfolgen',
+    lbl_mat:   'Fahrzeugkennzeichen',
+    hint_mat:  'Kennzeichen des LKW oder Sattelaufliegers',
+    lbl_tel:   'Mobiltelefon',
+    hint_tel:  'Nur zur Identifizierung, Sie erhalten keine Anrufe',
+    btn:       'Registrieren und Status anzeigen',
+    registrando: 'Wird registriert…',
+    err_mat:   'Bitte geben Sie ein gültiges Kennzeichen ein.',
+    err_tel:   'Bitte geben Sie eine gültige Telefonnummer ein.',
+    err_gen:   'Registrierung fehlgeschlagen. Bitte erneut versuchen oder zum Schalter gehen.',
+    endirecto: 'Live',
+    footer:    'Schließen Sie diese Seite nicht · Sie aktualisiert sich automatisch',
+    esperando_titulo: 'Zollabfertigung wird bearbeitet',
+    esperando_desc:   'Ihre Anfrage wurde registriert. Dieser Bildschirm wird automatisch aktualisiert, sobald wir ein Ergebnis haben.',
+    verde_titulo:  'Abfertigung abgeschlossen',
+    verde_desc:    'Ihr Fahrzeug wurde abgefertigt. Sie können die Ausreisedokumentation abholen.',
+    naranja_titulo: 'Genehmigung ausstehend',
+    naranja_desc:   'Ihre Abfertigung wartet auf die Genehmigung durch den Zollbeamten. Bitte bleiben Sie im Wartebereich.',
+    rojo_titulo:   'Physische Kontrolle erforderlich',
+    rojo_desc:     'Ihr Fahrzeug wurde für eine physische Kontrolle ausgewählt. Bitte melden Sie sich zur angegebenen Zeit am Kontrollpunkt.',
+    prefix: '+49',
+  },
+  lt: {
+    activo:    'Sistema aktyvi',
+    titulo:    'Įvažiavimo registracija',
+    subtitulo: 'Įveskite savo duomenis, kad šiame ekrane galėtumėte stebėti muitinio įforminimo būseną',
+    lbl_mat:   'Transporto priemonės numeris',
+    hint_mat:  'Sunkvežimio arba puspriekabės numeris',
+    lbl_tel:   'Mobilusis telefonas',
+    hint_tel:  'Tik identifikavimui, skambučių negausite',
+    btn:       'Registruotis ir peržiūrėti būseną',
+    registrando: 'Registruojama…',
+    err_mat:   'Įveskite galiojantį registracijos numerį.',
+    err_tel:   'Įveskite galiojantį telefono numerį.',
+    err_gen:   'Nepavyko užsiregistruoti. Bandykite dar kartą arba kreipkitės į langelį.',
+    endirecto: 'Tiesiogiai',
+    footer:    'Neuždarykite šio puslapio · Atnaujinama automatiškai',
+    esperando_titulo: 'Apdorojamas muitinis įforminimas',
+    esperando_desc:   'Jūsų užklausa užregistruota. Šis ekranas bus automatiškai atnaujintas, kai turėsime rezultatą.',
+    verde_titulo:  'Muitinis įforminimas baigtas',
+    verde_desc:    'Jūsų transporto priemonė išmuitinta. Galite atsiimti išvykimo dokumentus.',
+    naranja_titulo: 'Laukiama patvirtinimo',
+    naranja_desc:   'Jūsų muitinis įforminimas laukia muitinės pareigūno patvirtinimo. Prašome likti laukimo zonoje.',
+    rojo_titulo:   'Būtina fizinė patikra',
+    rojo_desc:     'Jūsų transporto priemonė pasirinkta fizinei patikrai. Nurodytu laiku atvykite į kontrolės punktą.',
+    prefix: '+370',
+  },
+  ru: {
+    activo:    'Система активна',
+    titulo:    'Регистрация въезда',
+    subtitulo: 'Введите данные, чтобы следить за статусом таможенного оформления на этом экране',
+    lbl_mat:   'Регистрационный номер ТС',
+    hint_mat:  'Номер грузовика или полуприцепа',
+    lbl_tel:   'Мобильный телефон',
+    hint_tel:  'Только для идентификации, звонков не будет',
+    btn:       'Зарегистрироваться и смотреть статус',
+    registrando: 'Регистрация…',
+    err_mat:   'Введите действительный регистрационный номер.',
+    err_tel:   'Введите действительный номер телефона.',
+    err_gen:   'Не удалось зарегистрироваться. Попробуйте ещё раз или обратитесь на стойку.',
+    endirecto: 'В прямом эфире',
+    footer:    'Не закрывайте эту страницу · Обновляется автоматически',
+    esperando_titulo: 'Обработка таможенного оформления',
+    esperando_desc:   'Ваш запрос зарегистрирован. Этот экран обновится автоматически, когда будет результат.',
+    verde_titulo:  'Таможенное оформление завершено',
+    verde_desc:    'Ваше транспортное средство оформлено. Вы можете получить документы для выезда.',
+    naranja_titulo: 'Ожидание авторизации',
+    naranja_desc:   'Ваше оформление ожидает авторизации таможенного инспектора. Пожалуйста, оставайтесь в зоне ожидания.',
+    rojo_titulo:   'Необходим физический досмотр',
+    rojo_desc:     'Ваше транспортное средство выбрано для физического досмотра. Пожалуйста, явитесь на контрольный пункт в указанное время.',
+    prefix: '+7',
+  },
+  it: {
+    activo:    'Sistema attivo',
+    titulo:    'Registrazione ingresso',
+    subtitulo: 'Inserisci i tuoi dati per seguire lo stato dello sdoganamento su questo schermo',
+    lbl_mat:   'Targa del veicolo',
+    hint_mat:  'Targa del camion o del semirimorchio',
+    lbl_tel:   'Telefono cellulare',
+    hint_tel:  'Solo per identificarti, non riceverai chiamate',
+    btn:       'Registra e visualizza stato',
+    registrando: 'Registrazione…',
+    err_mat:   'Inserisci una targa valida.',
+    err_tel:   'Inserisci un numero di telefono valido.',
+    err_gen:   'Impossibile registrarsi. Riprova o vai allo sportello.',
+    endirecto: 'In diretta',
+    footer:    'Non chiudere questa pagina · Si aggiorna automaticamente',
+    esperando_titulo: 'Sdoganamento in corso',
+    esperando_desc:   'La tua richiesta è stata registrata. Questo schermo si aggiornerà automaticamente quando avremo un risultato.',
+    verde_titulo:  'Sdoganamento completato',
+    verde_desc:    'Il tuo veicolo è stato sdoganato. Puoi ritirare la documentazione di uscita.',
+    naranja_titulo: 'In attesa di autorizzazione',
+    naranja_desc:   'Il tuo sdoganamento è in attesa di autorizzazione da parte del funzionario doganale. Rimani nell\'area di attesa.',
+    rojo_titulo:   'Ispezione fisica richiesta',
+    rojo_desc:     'Il tuo veicolo è stato selezionato per un\'ispezione fisica. Presentati al punto di controllo all\'orario indicato.',
+    prefix: '+39',
+  },
+};
+
+// ── CAMBIAR IDIOMA ──
+function setLang(lang) {
+  idiomaActual = lang;
+  const t = T[lang];
+
+  // Botones
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Formulario
+  document.getElementById('txt-activo').textContent    = t.activo;
+  document.getElementById('txt-titulo').textContent    = t.titulo;
+  document.getElementById('txt-subtitulo').textContent = t.subtitulo;
+  document.getElementById('lbl-mat').textContent       = t.lbl_mat;
+  document.getElementById('hint-mat').textContent      = t.hint_mat;
+  document.getElementById('lbl-tel').textContent       = t.lbl_tel;
+  document.getElementById('hint-tel').textContent      = t.hint_tel;
+  document.getElementById('btn-txt').textContent       = t.btn;
+  document.getElementById('prefix-box').textContent    = t.prefix;
+
+  // Estado (si ya está mostrándose)
+  document.getElementById('txt-endirecto').textContent = t.endirecto;
+  document.getElementById('txt-footer').textContent    = t.footer;
+
+  // Si está en pantalla de espera, actualizar textos
+  const card = document.getElementById('estado-card');
+  if (card.classList.contains('waiting')) {
+    document.getElementById('estado-titulo').textContent = t.esperando_titulo;
+    document.getElementById('estado-desc').textContent   = t.esperando_desc;
+  }
+}
+
+// Inicializar con español
+document.addEventListener('DOMContentLoaded', () => {
+  const t = T['es'];
+  document.getElementById('txt-activo').textContent    = t.activo;
+  document.getElementById('txt-titulo').textContent    = t.titulo;
+  document.getElementById('txt-subtitulo').textContent = t.subtitulo;
+  document.getElementById('lbl-mat').textContent       = t.lbl_mat;
+  document.getElementById('hint-mat').textContent      = t.hint_mat;
+  document.getElementById('lbl-tel').textContent       = t.lbl_tel;
+  document.getElementById('hint-tel').textContent      = t.hint_tel;
+  document.getElementById('btn-txt').textContent       = t.btn;
+  document.getElementById('txt-endirecto').textContent = t.endirecto;
+  document.getElementById('txt-footer').textContent    = t.footer;
+  document.getElementById('estado-titulo').textContent = t.esperando_titulo;
+  document.getElementById('estado-desc').textContent   = t.esperando_desc;
+});
+
+// ── INPUTS ──
 document.getElementById('inp-mat').addEventListener('input', function() {
   this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 });
-
 document.getElementById('inp-tel').addEventListener('input', function() {
-  this.value = this.value.replace(/[^0-9+\s]/g, '');
+  this.value = this.value.replace(/[^0-9\s]/g, '');
 });
-
 document.addEventListener('keydown', e => { if (e.key === 'Enter') registrar(); });
 
 // ── REGISTRAR ──
 async function registrar() {
+  const t   = T[idiomaActual];
   const mat = document.getElementById('inp-mat').value.trim();
   const tel = document.getElementById('inp-tel').value.trim().replace(/\s/g, '');
   const errEl = document.getElementById('form-err');
   errEl.style.display = 'none';
 
-  if (mat.length < 4) {
-    mostrarError('Introduce una matrícula válida.'); return;
-  }
-  if (tel.replace(/[^0-9]/g, '').length < 9) {
-    mostrarError('Introduce un número de teléfono válido.'); return;
-  }
+  if (mat.length < 4) { mostrarError(t.err_mat); return; }
+  if (tel.replace(/[^0-9]/g, '').length < 7) { mostrarError(t.err_tel); return; }
 
-  let telefono = tel;
-  if (!telefono.startsWith('+')) telefono = '+34' + telefono;
+  const telefono = T[idiomaActual].prefix + tel;
 
   setLoading(true);
 
@@ -451,50 +503,39 @@ async function registrar() {
         'Authorization': `Bearer ${ANON_KEY}`,
         'Prefer': 'return=representation'
       },
-      body: JSON.stringify({
-        matricula: mat,
-        telefono,
-        hora_entrada: new Date().toISOString()
-      })
+      body: JSON.stringify({ matricula: mat, telefono, hora_entrada: new Date().toISOString() })
     });
 
     if (!res.ok) throw new Error();
-
     const data = await res.json();
     despachoId = data[0]?.id;
+    if (!despachoId) throw new Error();
 
-    if (!despachoId) throw new Error('Sin ID');
-
-    // Mostrar pantalla de estado y suscribirse
+    // Mostrar pantalla de estado
+    document.getElementById('lang-bar').style.display      = 'none';
     document.getElementById('screen-form').style.display   = 'none';
     document.getElementById('screen-estado').style.display = 'block';
     document.getElementById('estado-mat-top').textContent  = mat;
+    document.getElementById('estado-titulo').textContent   = t.esperando_titulo;
+    document.getElementById('estado-desc').textContent     = t.esperando_desc;
 
     suscribirEstado(despachoId);
 
   } catch {
-    mostrarError('No se pudo registrar. Inténtalo de nuevo o acude a la ventanilla.');
+    mostrarError(t.err_gen);
   } finally {
     setLoading(false);
   }
 }
 
-// ── SUSCRIPCIÓN REALTIME ──
+// ── REALTIME ──
 function suscribirEstado(id) {
-  // Canal Realtime: escucha cambios en la fila concreta de este despacho
   suscripcion = sb.channel(`despacho-${id}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'despachos',
-        filter: `id=eq.${id}`
-      },
-      payload => {
-        actualizarPantalla(payload.new);
-      }
-    )
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'despachos', filter: `id=eq.${id}`
+    }, payload => {
+      actualizarPantalla(payload.new);
+    })
     .subscribe();
 }
 
@@ -502,6 +543,7 @@ function suscribirEstado(id) {
 function actualizarPantalla(despacho) {
   const c = despacho.circuito;
   if (!c) return;
+  const t = T[idiomaActual];
 
   const card    = document.getElementById('estado-card');
   const icon    = document.getElementById('estado-icon');
@@ -516,40 +558,37 @@ function actualizarPantalla(despacho) {
   if (c === 'verde') {
     card.classList.add('verde');
     icon.textContent  = '✅';
-    titulo.textContent = 'Despacho completado';
-    desc.textContent  = 'Tu vehículo ha sido despachado. Puedes proceder a la salida.';
-
+    titulo.textContent = t.verde_titulo;
+    desc.textContent  = t.verde_desc;
   } else if (c === 'naranja') {
     card.classList.add('naranja');
     icon.textContent  = '⏳';
-    titulo.textContent = 'Trámite en administración';
-    desc.textContent  = 'Tu despacho está siendo revisado por administración. Permanece en el área de espera.';
-
-  } else if (c === 'rojo-10' || c === 'rojo-12' || c === 'rojo-14') {
+    titulo.textContent = t.naranja_titulo;
+    desc.textContent  = t.naranja_desc;
+  } else if (c?.startsWith('rojo')) {
     const hora = c.split('-')[1] + ':00h';
     card.classList.add('rojo');
     icon.textContent  = '🔴';
-    titulo.textContent = 'Inspección física requerida';
-    desc.textContent  = 'Tu vehículo ha sido seleccionado para inspección física. Dirígete al punto de control a la hora indicada.';
+    titulo.textContent = t.rojo_titulo;
+    desc.textContent  = t.rojo_desc;
     horaBdg.textContent   = hora;
     horaBdg.style.display = 'inline-block';
   }
 
-  // Vibrar el móvil si está disponible
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 }
 
 // ── HELPERS ──
 function mostrarError(msg) {
   const e = document.getElementById('form-err');
-  e.textContent = msg;
-  e.style.display = 'block';
+  e.textContent = msg; e.style.display = 'block';
 }
 
 function setLoading(on) {
   document.getElementById('btn-reg').disabled = on;
   document.getElementById('spinner').style.display = on ? 'block' : 'none';
-  document.getElementById('btn-txt').textContent   = on ? 'Registrando…' : 'Registrar y ver estado';
+  const t = T[idiomaActual];
+  document.getElementById('btn-txt').textContent = on ? t.registrando : t.btn;
 }
 </script>
 </body>
