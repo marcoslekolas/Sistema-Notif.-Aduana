@@ -76,6 +76,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 @keyframes dotPulse{0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1.2);opacity:1}}
 .waiting .waiting-dots{display:flex}.resolved .waiting-dots{display:none}
 .recordatorio{margin-top:16px;padding:10px 14px;background:rgba(180,83,9,.12);border:1px solid rgba(180,83,9,.3);border-radius:8px;font-size:13px;color:#fbbf24;line-height:1.5;display:none;animation:fadeUp .4s ease both}
+.link-recover{margin-top:18px;text-align:center}
+.link-recover button{background:none;border:none;color:var(--muted);font-family:var(--narrow);font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px}
+.link-recover button:hover{color:var(--text)}
+.recover-box{margin-top:14px;padding:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;display:none;animation:fadeUp .3s ease both}
+.recover-box label{display:block;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.recover-row{display:flex;gap:8px}
+.recover-input{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:13px 14px;font-family:var(--narrow);font-size:20px;font-weight:700;letter-spacing:.08em;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .2s}
+.recover-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.recover-input::placeholder{color:#2a2d34;font-weight:400}
+.btn-recover{padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text);cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn-recover:hover{background:var(--border)}
+.recover-err{margin-top:8px;font-size:12px;color:#f87171;display:none;font-family:var(--narrow)}
 .estado-footer{margin-top:24px;font-size:12px;color:#2a2d34;font-family:var(--narrow);letter-spacing:.04em}
 .estado-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
 .conexion-pill{display:flex;align-items:center;gap:5px;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#22c55e}
@@ -135,6 +147,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="spinner" id="spinner"></div>
     <span id="btn-txt">Registrar y ver estado</span>
   </button>
+
+  <div class="link-recover">
+    <button onclick="toggleRecover()" id="btn-recover-link">¿Ya te registraste antes y cerraste la página?</button>
+  </div>
+
+  <div class="recover-box" id="recover-box">
+    <label id="lbl-recover">Consultar estado por matrícula</label>
+    <div class="recover-row">
+      <input type="text" class="recover-input" id="inp-recover" placeholder="1234ABC"
+        maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button class="btn-recover" onclick="recuperar()" id="btn-rec">Consultar</button>
+    </div>
+    <div class="recover-err" id="recover-err"></div>
+  </div>
 </div>
 
 <!-- ESTADO EN TIEMPO REAL -->
@@ -196,6 +222,10 @@ const T = {
     rojo_titulo:   'Inspección física requerida',
     rojo_desc:     'Tu vehículo ha sido seleccionado para inspección física. Dirígete al punto de control a la hora indicada.',
     naranja_rec: 'Actualización: tu trámite continúa pendiente de autorización del técnico de aduanas. Tiempo en espera: {min} min.',
+    lbl_recover: 'Consultar estado por matrícula',
+    recover_link: '¿Ya te registraste antes y cerraste la página?',
+    recover_btn: 'Consultar',
+    recover_err: 'Matrícula no encontrada en los registros de hoy.',
     prefix: '+34',
   },
   en: {
@@ -222,6 +252,10 @@ const T = {
     rojo_titulo:   'Physical inspection required',
     rojo_desc:     'Your vehicle has been selected for physical inspection. Please report to the inspection point at the indicated time.',
     naranja_rec: 'Update: your clearance is still pending customs officer authorisation. Waiting time: {min} min.',
+    lbl_recover: 'Check status by plate number',
+    recover_link: 'Already registered but closed the page?',
+    recover_btn: 'Check',
+    recover_err: 'Plate number not found in today\'s records.',
     prefix: '+44',
   },
   fr: {
@@ -248,6 +282,10 @@ const T = {
     rojo_titulo:   'Inspection physique requise',
     rojo_desc:     'Votre véhicule a été sélectionné pour une inspection physique. Présentez-vous au point de contrôle à l\'heure indiquée.',
     naranja_rec: 'Mise à jour : votre dédouanement est toujours en attente d\'autorisation. Temps d\'attente : {min} min.',
+    lbl_recover: 'Consulter l\'état par immatriculation',
+    recover_link: 'Déjà enregistré mais page fermée ?',
+    recover_btn: 'Consulter',
+    recover_err: 'Immatriculation introuvable dans les enregistrements d\'aujourd\'hui.',
     prefix: '+33',
   },
   pt: {
@@ -274,6 +312,10 @@ const T = {
     rojo_titulo:   'Inspeção física necessária',
     rojo_desc:     'O seu veículo foi selecionado para inspeção física. Dirija-se ao ponto de controlo à hora indicada.',
     naranja_rec: 'Atualização: o seu despacho continua pendente de autorização. Tempo de espera: {min} min.',
+    lbl_recover: 'Consultar estado por matrícula',
+    recover_link: 'Já se registou mas fechou a página?',
+    recover_btn: 'Consultar',
+    recover_err: 'Matrícula não encontrada nos registos de hoje.',
     prefix: '+351',
   },
   ro: {
@@ -300,6 +342,10 @@ const T = {
     rojo_titulo:   'Inspecție fizică necesară',
     rojo_desc:     'Vehiculul dvs. a fost selectat pentru inspecție fizică. Prezentați-vă la punctul de control la ora indicată.',
     naranja_rec: 'Actualizare: vămuirea este în continuare în așteptare. Timp de așteptare: {min} min.',
+    lbl_recover: 'Verificați starea după numărul de înmatriculare',
+    recover_link: 'V-ați înregistrat deja dar ați închis pagina?',
+    recover_btn: 'Verificați',
+    recover_err: 'Numărul de înmatriculare nu a fost găsit în înregistrările de astăzi.',
     prefix: '+40',
   },
   pl: {
@@ -326,6 +372,10 @@ const T = {
     rojo_titulo:   'Wymagana kontrola fizyczna',
     rojo_desc:     'Twój pojazd został wybrany do kontroli fizycznej. Proszę zgłosić się do punktu kontrolnego o wskazanej godzinie.',
     naranja_rec: 'Aktualizacja: odprawa nadal oczekuje na autoryzację. Czas oczekiwania: {min} min.',
+    lbl_recover: 'Sprawdź status po numerze rejestracyjnym',
+    recover_link: 'Już się zarejestrowałeś, ale zamknąłeś stronę?',
+    recover_btn: 'Sprawdź',
+    recover_err: 'Numer rejestracyjny nie został znaleziony w dzisiejszych rekordach.',
     prefix: '+48',
   },
   de: {
@@ -352,6 +402,10 @@ const T = {
     rojo_titulo:   'Physische Kontrolle erforderlich',
     rojo_desc:     'Ihr Fahrzeug wurde für eine physische Kontrolle ausgewählt. Bitte melden Sie sich zur angegebenen Zeit am Kontrollpunkt.',
     naranja_rec: 'Aktualisierung: Abfertigung wartet weiterhin auf Genehmigung. Wartezeit: {min} Min.',
+    lbl_recover: 'Status per Kennzeichen abfragen',
+    recover_link: 'Bereits registriert, aber Seite geschlossen?',
+    recover_btn: 'Abfragen',
+    recover_err: 'Kennzeichen in den heutigen Einträgen nicht gefunden.',
     prefix: '+49',
   },
   lt: {
@@ -378,6 +432,10 @@ const T = {
     rojo_titulo:   'Būtina fizinė patikra',
     rojo_desc:     'Jūsų transporto priemonė pasirinkta fizinei patikrai. Nurodytu laiku atvykite į kontrolės punktą.',
     naranja_rec: 'Atnaujinimas: įforminimas vis dar laukia patvirtinimo. Laukimo laikas: {min} min.',
+    lbl_recover: 'Tikrinti būseną pagal numerį',
+    recover_link: 'Jau užsiregistravote, bet uždarėte puslapį?',
+    recover_btn: 'Tikrinti',
+    recover_err: 'Numeris nerastas šios dienos įrašuose.',
     prefix: '+370',
   },
   ru: {
@@ -404,6 +462,10 @@ const T = {
     rojo_titulo:   'Необходим физический досмотр',
     rojo_desc:     'Ваше транспортное средство выбрано для физического досмотра. Пожалуйста, явитесь на контрольный пункт в указанное время.',
     naranja_rec: 'Обновление: оформление по-прежнему ожидает авторизации. Время ожидания: {min} мин.',
+    lbl_recover: 'Проверить статус по номеру',
+    recover_link: 'Уже зарегистрировались, но закрыли страницу?',
+    recover_btn: 'Проверить',
+    recover_err: 'Номер не найден в сегодняшних записях.',
     prefix: '+7',
   },
   it: {
@@ -430,6 +492,10 @@ const T = {
     rojo_titulo:   'Ispezione fisica richiesta',
     rojo_desc:     'Il tuo veicolo è stato selezionato per un\'ispezione fisica. Presentati al punto di controllo all\'orario indicato.',
     naranja_rec: 'Aggiornamento: sdoganamento ancora in attesa di autorizzazione. Tempo di attesa: {min} min.',
+    lbl_recover: 'Controlla stato per targa',
+    recover_link: 'Già registrato ma hai chiuso la pagina?',
+    recover_btn: 'Controlla',
+    recover_err: 'Targa non trovata nei registri di oggi.',
     prefix: '+39',
   },
 };
@@ -457,6 +523,9 @@ function setLang(lang) {
   // Estado (si ya está mostrándose)
   document.getElementById('txt-endirecto').textContent = t.endirecto;
   document.getElementById('txt-footer').textContent    = t.footer;
+  if (t.lbl_recover)   document.getElementById('lbl-recover').textContent       = t.lbl_recover;
+  if (t.recover_link)  document.getElementById('btn-recover-link').textContent  = t.recover_link;
+  if (t.recover_btn)   document.getElementById('btn-rec').textContent           = t.recover_btn;
 
   // Si está en pantalla de espera, actualizar textos
   const card = document.getElementById('estado-card');
@@ -479,6 +548,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-txt').textContent       = t.btn;
   document.getElementById('txt-endirecto').textContent = t.endirecto;
   document.getElementById('txt-footer').textContent    = t.footer;
+  if (t.lbl_recover)   document.getElementById('lbl-recover').textContent       = t.lbl_recover;
+  if (t.recover_link)  document.getElementById('btn-recover-link').textContent  = t.recover_link;
+  if (t.recover_btn)   document.getElementById('btn-rec').textContent           = t.recover_btn;
   document.getElementById('estado-titulo').textContent = t.esperando_titulo;
   document.getElementById('estado-desc').textContent   = t.esperando_desc;
 });
@@ -590,6 +662,81 @@ function actualizarPantalla(despacho) {
   }
 
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+// ── RECUPERAR ESTADO ──
+function toggleRecover() {
+  const box = document.getElementById('recover-box');
+  const visible = box.style.display === 'block';
+  box.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    const inp = document.getElementById('inp-recover');
+    inp.focus();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('inp-recover').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  });
+  document.getElementById('inp-recover').addEventListener('keydown', e => {
+    if (e.key === 'Enter') recuperar();
+  });
+});
+
+async function recuperar() {
+  const mat = document.getElementById('inp-recover').value.trim();
+  const errEl = document.getElementById('recover-err');
+  const t = T[idiomaActual];
+  errEl.style.display = 'none';
+
+  if (mat.length < 4) return;
+
+  const btn = document.getElementById('btn-rec');
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  const hoy = new Date().toISOString().split('T')[0];
+
+  const { data } = await sb
+    .from('despachos')
+    .select('*')
+    .eq('matricula', mat)
+    .gte('hora_entrada', hoy + 'T00:00:00')
+    .order('hora_entrada', { ascending: false })
+    .limit(1);
+
+  btn.disabled = false;
+  btn.textContent = t.recover_btn || 'Consultar';
+
+  if (!data || data.length === 0) {
+    errEl.textContent = t.recover_err || 'Matrícula no encontrada en los registros de hoy.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const despacho = data[0];
+  despachoId = despacho.id;
+
+  // Ir a pantalla de estado
+  document.getElementById('lang-bar').style.display      = 'none';
+  document.getElementById('screen-form').style.display   = 'none';
+  document.getElementById('screen-estado').style.display = 'block';
+  document.getElementById('estado-mat-top').textContent  = despacho.matricula;
+
+  // Si ya tiene circuito, mostrarlo directamente
+  if (despacho.circuito) {
+    actualizarPantalla(despacho);
+  } else {
+    // Mostrar espera y suscribirse
+    const tx = T[idiomaActual];
+    document.getElementById('estado-titulo').textContent = tx.esperando_titulo;
+    document.getElementById('estado-desc').textContent   = tx.esperando_desc;
+  }
+
+  // Suscribirse a cambios futuros
+  suscribirEstado(despachoId);
+  iniciarRecordatorioNaranja();
 }
 
 // ── RECORDATORIO NARANJA CADA 30 MIN ──
