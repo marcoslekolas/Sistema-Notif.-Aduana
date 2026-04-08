@@ -452,10 +452,8 @@ async function registrar() {
         'Prefer': 'return=representation'
       },
       body: JSON.stringify({
-        matricula:    mat,
+        matricula,
         telefono,
-        estado:       'pendiente',
-        circuito:     null,
         hora_entrada: new Date().toISOString()
       })
     });
