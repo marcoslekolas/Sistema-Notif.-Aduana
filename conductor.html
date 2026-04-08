@@ -452,7 +452,7 @@ async function registrar() {
         'Prefer': 'return=representation'
       },
       body: JSON.stringify({
-        matricula,
+        matricula: mat,
         telefono,
         hora_entrada: new Date().toISOString()
       })
