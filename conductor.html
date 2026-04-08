@@ -74,6 +74,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .waiting-dots span:nth-child(3){animation-delay:.4s}
 @keyframes dotPulse{0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1.2);opacity:1}}
 .waiting .waiting-dots{display:flex}.resolved .waiting-dots{display:none}
+.recordatorio{margin-top:16px;padding:10px 14px;background:rgba(180,83,9,.12);border:1px solid rgba(180,83,9,.3);border-radius:8px;font-size:13px;color:#fbbf24;line-height:1.5;display:none;animation:fadeUp .4s ease both}
 .estado-footer{margin-top:24px;font-size:12px;color:#2a2d34;font-family:var(--narrow);letter-spacing:.04em}
 .estado-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
 .conexion-pill{display:flex;align-items:center;gap:5px;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#22c55e}
@@ -150,6 +151,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="estado-titulo" id="estado-titulo"></div>
     <div class="estado-desc"   id="estado-desc"></div>
     <div class="hora-badge"    id="hora-badge" style="display:none"></div>
+    <div class="recordatorio" id="recordatorio"></div>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 
@@ -192,6 +194,7 @@ const T = {
     naranja_desc:   'Tu despacho está pendiente de autorización por parte del técnico de aduanas. Permanece en el área de espera.',
     rojo_titulo:   'Inspección física requerida',
     rojo_desc:     'Tu vehículo ha sido seleccionado para inspección física. Dirígete al punto de control a la hora indicada.',
+    naranja_rec: 'Actualización: tu trámite continúa pendiente de autorización del técnico de aduanas. Tiempo en espera: {min} min.',
     prefix: '+34',
   },
   en: {
@@ -217,6 +220,7 @@ const T = {
     naranja_desc:   'Your clearance is pending authorisation by the customs officer. Please remain in the waiting area.',
     rojo_titulo:   'Physical inspection required',
     rojo_desc:     'Your vehicle has been selected for physical inspection. Please report to the inspection point at the indicated time.',
+    naranja_rec: 'Update: your clearance is still pending customs officer authorisation. Waiting time: {min} min.',
     prefix: '+44',
   },
   fr: {
@@ -242,6 +246,7 @@ const T = {
     naranja_desc:   'Votre dédouanement est en attente d\'autorisation par l\'agent des douanes. Veuillez rester dans la zone d\'attente.',
     rojo_titulo:   'Inspection physique requise',
     rojo_desc:     'Votre véhicule a été sélectionné pour une inspection physique. Présentez-vous au point de contrôle à l\'heure indiquée.',
+    naranja_rec: 'Mise à jour : votre dédouanement est toujours en attente d\'autorisation. Temps d\'attente : {min} min.',
     prefix: '+33',
   },
   pt: {
@@ -267,6 +272,7 @@ const T = {
     naranja_desc:   'O seu despacho aguarda autorização do técnico aduaneiro. Por favor, permaneça na área de espera.',
     rojo_titulo:   'Inspeção física necessária',
     rojo_desc:     'O seu veículo foi selecionado para inspeção física. Dirija-se ao ponto de controlo à hora indicada.',
+    naranja_rec: 'Atualização: o seu despacho continua pendente de autorização. Tempo de espera: {min} min.',
     prefix: '+351',
   },
   ro: {
@@ -292,6 +298,7 @@ const T = {
     naranja_desc:   'Vămuirea dvs. așteaptă autorizarea din partea ofițerului vamal. Vă rugăm să rămâneți în zona de așteptare.',
     rojo_titulo:   'Inspecție fizică necesară',
     rojo_desc:     'Vehiculul dvs. a fost selectat pentru inspecție fizică. Prezentați-vă la punctul de control la ora indicată.',
+    naranja_rec: 'Actualizare: vămuirea este în continuare în așteptare. Timp de așteptare: {min} min.',
     prefix: '+40',
   },
   pl: {
@@ -317,6 +324,7 @@ const T = {
     naranja_desc:   'Twoja odprawa oczekuje na autoryzację przez urzędnika celnego. Proszę pozostać w strefie oczekiwania.',
     rojo_titulo:   'Wymagana kontrola fizyczna',
     rojo_desc:     'Twój pojazd został wybrany do kontroli fizycznej. Proszę zgłosić się do punktu kontrolnego o wskazanej godzinie.',
+    naranja_rec: 'Aktualizacja: odprawa nadal oczekuje na autoryzację. Czas oczekiwania: {min} min.',
     prefix: '+48',
   },
   de: {
@@ -342,6 +350,7 @@ const T = {
     naranja_desc:   'Ihre Abfertigung wartet auf die Genehmigung durch den Zollbeamten. Bitte bleiben Sie im Wartebereich.',
     rojo_titulo:   'Physische Kontrolle erforderlich',
     rojo_desc:     'Ihr Fahrzeug wurde für eine physische Kontrolle ausgewählt. Bitte melden Sie sich zur angegebenen Zeit am Kontrollpunkt.',
+    naranja_rec: 'Aktualisierung: Abfertigung wartet weiterhin auf Genehmigung. Wartezeit: {min} Min.',
     prefix: '+49',
   },
   lt: {
@@ -367,6 +376,7 @@ const T = {
     naranja_desc:   'Jūsų muitinis įforminimas laukia muitinės pareigūno patvirtinimo. Prašome likti laukimo zonoje.',
     rojo_titulo:   'Būtina fizinė patikra',
     rojo_desc:     'Jūsų transporto priemonė pasirinkta fizinei patikrai. Nurodytu laiku atvykite į kontrolės punktą.',
+    naranja_rec: 'Atnaujinimas: įforminimas vis dar laukia patvirtinimo. Laukimo laikas: {min} min.',
     prefix: '+370',
   },
   ru: {
@@ -392,6 +402,7 @@ const T = {
     naranja_desc:   'Ваше оформление ожидает авторизации таможенного инспектора. Пожалуйста, оставайтесь в зоне ожидания.',
     rojo_titulo:   'Необходим физический досмотр',
     rojo_desc:     'Ваше транспортное средство выбрано для физического досмотра. Пожалуйста, явитесь на контрольный пункт в указанное время.',
+    naranja_rec: 'Обновление: оформление по-прежнему ожидает авторизации. Время ожидания: {min} мин.',
     prefix: '+7',
   },
   it: {
@@ -417,6 +428,7 @@ const T = {
     naranja_desc:   'Il tuo sdoganamento è in attesa di autorizzazione da parte del funzionario doganale. Rimani nell\'area di attesa.',
     rojo_titulo:   'Ispezione fisica richiesta',
     rojo_desc:     'Il tuo veicolo è stato selezionato per un\'ispezione fisica. Presentati al punto di controllo all\'orario indicato.',
+    naranja_rec: 'Aggiornamento: sdoganamento ancora in attesa di autorizzazione. Tempo di attesa: {min} min.',
     prefix: '+39',
   },
 };
@@ -520,6 +532,7 @@ async function registrar() {
     document.getElementById('estado-desc').textContent     = t.esperando_desc;
 
     suscribirEstado(despachoId);
+    iniciarRecordatorioNaranja();
 
   } catch {
     mostrarError(t.err_gen);
@@ -576,6 +589,25 @@ function actualizarPantalla(despacho) {
   }
 
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+// ── RECORDATORIO NARANJA CADA 30 MIN ──
+let recInterval = null;
+let minsEspera  = 0;
+
+function iniciarRecordatorioNaranja() {
+  recInterval = setInterval(() => {
+    minsEspera++;
+    const card = document.getElementById('estado-card');
+    if (!card || !card.classList.contains('naranja')) return;
+    if (minsEspera > 0 && minsEspera % 30 === 0) {
+      const t = T[idiomaActual];
+      const rec = document.getElementById('recordatorio');
+      rec.style.display = 'block';
+      rec.textContent = (t.naranja_rec || 'Actualización {min} min: trámite pendiente de autorización de aduanas.').replace('{min}', minsEspera);
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
+  }, 60000);
 }
 
 // ── HELPERS ──
