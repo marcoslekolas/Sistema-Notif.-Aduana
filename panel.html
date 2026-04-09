@@ -392,11 +392,32 @@ function confirmarRojo(circuito) {
 function asignar(id, circuito, mat) {
   var snd = document.getElementById('snd-' + id);
   if (snd) { snd.textContent = 'aplicando…'; snd.classList.add('show'); }
-  var archivado = circuito === 'verde';
-  // Guardar circuito anterior antes de sobreescribir
+
+  // Leer fila actual ANTES de modificar
   var fila = rows.find(function(r){ return r.id === id; });
-  var previo = (fila && fila.circuito && fila.circuito !== circuito) ? fila.circuito : (fila ? fila.circuito_previo : null);
-  sb.from('despachos').update({circuito: circuito, archivado: archivado, circuito_previo: previo}).eq('id', id)
+
+  // circuito_previo: guardar el circuito actual si es distinto al nuevo y no es null
+  var previo = null;
+  if (fila) {
+    if (fila.circuito && fila.circuito !== circuito) {
+      // Encadenar: si ya había un previo y el actual es verde, conservar el más antiguo
+      previo = fila.circuito_previo || fila.circuito;
+    } else {
+      previo = fila.circuito_previo || null;
+    }
+  }
+
+  var archivado = circuito === 'verde';
+
+  // Al archivar, limpiar también el aviso de mostrador
+  var update = {
+    circuito: circuito,
+    archivado: archivado,
+    circuito_previo: previo
+  };
+  if (archivado) update.mensaje_mostrador = false;
+
+  sb.from('despachos').update(update).eq('id', id)
     .then(function(res) {
       if (res.error) { toast('Error al actualizar', 'err'); }
       else { toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : ''); }
@@ -407,7 +428,16 @@ function asignar(id, circuito, mat) {
 function resolver(id, tipo, mat) {
   var snd = document.getElementById('snd-' + id);
   if (snd) { snd.textContent = 'archivando…'; snd.classList.add('show'); }
-  sb.from('despachos').update({archivado: true}).eq('id', id)
+
+  // Guardar circuito actual como previo al archivar
+  var fila = rows.find(function(r){ return r.id === id; });
+  var previo = fila ? (fila.circuito_previo || fila.circuito) : null;
+
+  sb.from('despachos').update({
+    archivado: true,
+    circuito_previo: previo,
+    mensaje_mostrador: false
+  }).eq('id', id)
     .then(function(res) {
       if (res.error) { toast('Error al archivar', 'err'); }
       else { toast('✓ ' + mat + (tipo==='naranja' ? ' autorizado' : ' inspeccionado') + ' y archivado', 'ok'); }
