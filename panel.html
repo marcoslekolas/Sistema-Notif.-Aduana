@@ -434,6 +434,7 @@ function resolver(id, tipo, mat) {
   var previo = fila ? (fila.circuito_previo || fila.circuito) : null;
 
   sb.from('despachos').update({
+    circuito: 'verde',
     archivado: true,
     circuito_previo: previo,
     mensaje_mostrador: false
