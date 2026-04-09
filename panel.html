@@ -331,11 +331,11 @@ function renderTabla(list, conAcciones) {
   const tb = document.getElementById('tbody');
 
   if (!list.length) {
-    tb.innerHTML = `<tr><td colspan="5"><div class="empty">— Sin vehículos en esta categoría —</div></td></tr>`;
+    tb.innerHTML = '<tr><td colspan="5"><div class="empty">— Sin vehículos en esta categoría —</div></td></tr>';
     return;
   }
 
-  tb.innerHTML = list.map(r => {
+  const filas = list.map(r => {
     const hora = new Date(r.hora_entrada)
       .toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
     const { cls, lbl } = badgeInfo(r.circuito);
@@ -346,45 +346,46 @@ function renderTabla(list, conAcciones) {
     if (r.circuito === 'naranja' && !r.archivado) {
       const mins = minutosDesde(r.hora_entrada);
       const warn = mins >= 25;
-      timerTag = `<span class="naranja-timer ${warn?'timer-warn':''}">${formatMins(mins)}</span>`;
+      timerTag = '<span class="naranja-timer ' + (warn ? 'timer-warn' : '') + '">' + formatMins(mins) + '</span>';
     }
 
     const viendo = r.tiene_pantalla_abierta
-      ? `<span class="viendo-tag"><div class="viendo-dot"></div>En pantalla</span>` : '';
+      ? '<span class="viendo-tag"><div class="viendo-dot"></div>En pantalla</span>' : '';
 
+    // Badge NUEVO
+    const esNuevo = nuevasIds.has(r.id);
+    const nuevoBadge = esNuevo ? '<span class="nuevo-badge">NUEVO</span>' : '';
+
+    // Acciones
     let acciones = '';
     if (conAcciones && !r.archivado) {
-      // Botones extra según circuito actual
       let btnExtra = '';
       if (r.circuito === 'naranja') {
-        btnExtra = `<button class="ab ab-resolve" onclick="resolver('${r.id}','naranja','${r.matricula}')">✓ Autorizado</button>`;
-      } else if (r.circuito?.startsWith('rojo')) {
-        btnExtra = `<button class="ab ab-resolve" onclick="resolver('${r.id}','rojo','${r.matricula}')">✓ Inspeccionado</button>`;
+        btnExtra = '<button class="ab ab-resolve" onclick="resolver('' + r.id + '','naranja','' + r.matricula + '')">✓ Autorizado</button>';
+      } else if (r.circuito && r.circuito.startsWith('rojo')) {
+        btnExtra = '<button class="ab ab-resolve" onclick="resolver('' + r.id + '','rojo','' + r.matricula + '')">✓ Inspeccionado</button>';
       }
-      acciones = `
-        <div class="acts">
-          <button class="ab ab-v" onclick="asignar('${r.id}','verde','${r.matricula}')">✓ Verde</button>
-          <button class="ab ab-n" onclick="asignar('${r.id}','naranja','${r.matricula}')">⏳ Naranja</button>
-          <button class="ab ab-r" onclick="abrirModalRojo('${r.id}','${r.matricula}')">🔴 Rojo…</button>
-          ${btnExtra}
-          <span class="snd" id="snd-${r.id}">aplicando…</span>
-        </div>`;
+      acciones = '<div class="acts">' +
+        '<button class="ab ab-v" onclick="asignar('' + r.id + '','verde','' + r.matricula + '')">✓ Verde</button>' +
+        '<button class="ab ab-n" onclick="asignar('' + r.id + '','naranja','' + r.matricula + '')">⏳ Naranja</button>' +
+        '<button class="ab ab-r" onclick="abrirModalRojo('' + r.id + '','' + r.matricula + '')">🔴 Rojo…</button>' +
+        btnExtra +
+        '<span class="snd" id="snd-' + r.id + '">aplicando…</span>' +
+        '</div>';
     } else if (conAcciones && r.archivado) {
-      acciones = `<span style="font-family:var(--narrow);font-size:11px;color:var(--muted)">Archivado</span>`;
+      acciones = '<span style="font-family:var(--narrow);font-size:11px;color:var(--muted)">Archivado</span>';
     }
 
-    const esNuevo = !matriculasConocidas.has(r.id) || document.getElementById('nuevo-'+r.id);
-    const nuevoBadge = `<span class="nuevo-badge" id="nuevo-${r.id}" style="display:inline-flex">NUEVO</span>`;
-    return `<tr class="${archivada}" id="row-${r.id}">
-      <td class="td-mat">${r.matricula}${nuevoBadge}</td>
-      <td class="td-tel">${r.telefono}</td>
-      <td class="td-hora">${hora}</td>
-      <td>
-        <span class="badge ${cls}">${lbl}</span>${timerTag}${viendo}
-      </td>
-      ${conAcciones ? `<td>${acciones}</td>` : ''}
-    </tr>`;
-  }).join('');
+    return '<tr class="' + archivada + '" id="row-' + r.id + '">' +
+      '<td class="td-mat">' + r.matricula + nuevoBadge + '</td>' +
+      '<td class="td-tel">' + r.telefono + '</td>' +
+      '<td class="td-hora">' + hora + '</td>' +
+      '<td><span class="badge ' + cls + '">' + lbl + '</span>' + timerTag + viendo + '</td>' +
+      (conAcciones ? '<td>' + acciones + '</td>' : '') +
+      '</tr>';
+  });
+
+  tb.innerHTML = filas.join('');
 }
 
 function badgeInfo(c) {
@@ -511,6 +512,7 @@ function setFiltro(f, btn) {
 
 // ── ALERTAS DE NUEVA MATRÍCULA ──
 let matriculasConocidas = new Set();
+let nuevasIds = new Set();
 let alertasActivas = false;
 
 function inicializarMatriculas() {
@@ -545,10 +547,14 @@ function actualizarBtnNotif() {
 }
 
 function detectarNuevas(nuevasRows) {
+  nuevasIds.clear();
   nuevasRows.forEach(r => {
     if (!matriculasConocidas.has(r.id)) {
       matriculasConocidas.add(r.id);
+      nuevasIds.add(r.id);
       alertarNuevaMatricula(r);
+      // Limpiar badge después de 30s
+      setTimeout(() => { nuevasIds.delete(r.id); }, 30000);
     }
   });
 }
@@ -573,8 +579,8 @@ function alertarNuevaMatricula(r) {
   if (alertasActivas && Notification.permission === 'granted') {
     try {
       new Notification('Nueva matrícula registrada', {
-        body: `${r.matricula} · ${r.telefono}`,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a1816"/><text y=".9em" font-size="80" x="10">🚛</text></svg>',
+        body: r.matricula + ' · ' + r.telefono,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a1816"/><text y=".9em" font-size="80" x="10">&#x1F69B;</text></svg>',
         tag: r.id,
         requireInteraction: false,
       });
