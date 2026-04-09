@@ -661,7 +661,10 @@ function actualizarPantalla(despacho) {
     horaBdg.style.display = 'inline-block';
   }
 
+  // Vibración en Android
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  // Flash visual en iOS (donde vibrate no existe)
+  flashPantalla();
 }
 
 // ── RECUPERAR ESTADO ──
@@ -756,6 +759,25 @@ function iniciarRecordatorioNaranja() {
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     }
   }, 60000);
+}
+
+// ── FLASH VISUAL (alerta para iOS) ──
+function flashPantalla() {
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:0;z-index:9999;pointer-events:none;transition:opacity 0.1s';
+  document.body.appendChild(flash);
+  // Secuencia: aparece rápido, desaparece, repite 3 veces
+  let count = 0;
+  const seq = () => {
+    flash.style.opacity = '0.6';
+    setTimeout(() => {
+      flash.style.opacity = '0';
+      count++;
+      if (count < 3) setTimeout(seq, 200);
+      else setTimeout(() => flash.remove(), 300);
+    }, 100);
+  };
+  seq();
 }
 
 // ── HELPERS ──

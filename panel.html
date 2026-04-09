@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel · Despachos Aduaneros</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Despachos">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1a1816">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Archivo+Narrow:wght@400;500;600;700&display=swap');
@@ -295,6 +301,11 @@ sb.channel('panel-rt')
 
 load();
 
+// Registrar Service Worker para PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
 // Auto-activar alertas si el permiso ya estaba concedido
 if (Notification.permission === 'granted') {
   alertasActivas = true;
@@ -364,19 +375,19 @@ function renderTabla(list, conAcciones) {
     if (conAcciones && !r.archivado) {
       let btnExtra = '';
       if (r.circuito === 'naranja') {
-        btnExtra = "<button class='ab ab-resolve' onclick="resolver('" + id + "','naranja','" + mat + "')">✓ Autorizado</button>";
+        btnExtra = '<button class="ab ab-resolve" onclick="resolver(\'' + id + '\',\'naranja\',\'' + mat + '\')">✓ Autorizado</button>';
       } else if (r.circuito && r.circuito.startsWith('rojo')) {
-        btnExtra = "<button class='ab ab-resolve' onclick="resolver('" + id + "','rojo','" + mat + "')">✓ Inspeccionado</button>";
+        btnExtra = '<button class="ab ab-resolve" onclick="resolver(\'' + id + '\',\'rojo\',\'' + mat + '\')">✓ Inspeccionado</button>';
       }
-      acciones = "<div class='acts'>" +
-        "<button class='ab ab-v' onclick="asignar('" + id + "','verde','" + mat + "')">✓ Verde</button>" +
-        "<button class='ab ab-n' onclick="asignar('" + id + "','naranja','" + mat + "')">⏳ Naranja</button>" +
-        "<button class='ab ab-r' onclick="abrirModalRojo('" + id + "','" + mat + "')">🔴 Rojo…</button>" +
+      acciones = '<div class="acts">' +
+        '<button class="ab ab-v" onclick="asignar(\'' + id + '\',\'verde\',\'' + mat + '\')">✓ Verde</button>' +
+        '<button class="ab ab-n" onclick="asignar(\'' + id + '\',\'naranja\',\'' + mat + '\')">⏳ Naranja</button>' +
+        '<button class="ab ab-r" onclick="abrirModalRojo(\'' + id + '\',\'' + mat + '\')">🔴 Rojo…</button>' +
         btnExtra +
-        "<span class='snd' id='snd-" + id + "'>aplicando…</span>" +
-        "</div>";
+        '<span class="snd" id="snd-' + id + '">aplicando…</span>' +
+        '</div>';
     } else if (conAcciones && r.archivado) {
-      acciones = "<span style='font-family:var(--narrow);font-size:11px;color:var(--muted)'>Archivado</span>";
+      acciones = '<span style="font-family:var(--narrow);font-size:11px;color:var(--muted)">Archivado</span>';
     }
 
     return "<tr class='" + archivada + "' id='row-" + id + "'>" +
@@ -513,6 +524,35 @@ function setFiltro(f, btn) {
   renderHoy();
 }
 
+// ── PARPADEO TÍTULO + AUDIO CONTEXT ──
+let tituloOriginal = document.title;
+let parpadeoInterval = null;
+let audioCtx = null;
+
+// Crear AudioContext al primer toque (necesario en iOS)
+document.addEventListener('click', () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } else if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}, { once: false });
+
+function parpadearTitulo(matricula) {
+  let visible = true;
+  let count = 0;
+  if (parpadeoInterval) clearInterval(parpadeoInterval);
+  parpadeoInterval = setInterval(() => {
+    document.title = visible ? '🚛 ' + matricula + ' — NUEVA ENTRADA' : tituloOriginal;
+    visible = !visible;
+    count++;
+    if (count >= 20) {
+      clearInterval(parpadeoInterval);
+      document.title = tituloOriginal;
+    }
+  }, 800);
+}
+
 // ── ALERTAS DE NUEVA MATRÍCULA ──
 let matriculasConocidas = new Set();
 let nuevasIds = new Set();
@@ -563,19 +603,24 @@ function detectarNuevas(nuevasRows) {
 }
 
 function alertarNuevaMatricula(r) {
-  // 1. Sonido — tono generado por Web Audio API (sin archivos externos)
+  // 1. Parpadeo del título (funciona en todos los navegadores y dispositivos)
+  parpadearTitulo(r.matricula);
+
+  // 2. Sonido — usa el AudioContext pre-activado por el usuario
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc  = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.4);
+    gain.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(880,  audioCtx.currentTime);
+    osc.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.12);
+    osc.frequency.setValueAtTime(880,  audioCtx.currentTime + 0.24);
+    gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.5);
   } catch(e) {}
 
   // 2. Notificación del navegador (funciona aunque el panel esté minimizado)
