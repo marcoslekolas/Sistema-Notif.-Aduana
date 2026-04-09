@@ -76,6 +76,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 @keyframes dotPulse{0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1.2);opacity:1}}
 .waiting .waiting-dots{display:flex}.resolved .waiting-dots{display:none}
 .recordatorio{margin-top:16px;padding:10px 14px;background:rgba(180,83,9,.12);border:1px solid rgba(180,83,9,.3);border-radius:8px;font-size:13px;color:#fbbf24;line-height:1.5;display:none;animation:fadeUp .4s ease both}
+.aviso-mostrador{margin-top:16px;padding:16px 18px;background:#f5f3ff;border:2px solid #7c3aed;border-radius:10px;font-size:15px;font-weight:700;color:#5b21b6;line-height:1.5;display:none;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both;text-align:center}
+.aviso-mostrador .aviso-icono{font-size:32px;display:block;margin-bottom:8px}
 .link-recover{margin-top:18px;text-align:center}
 .link-recover button{background:none;border:none;color:var(--muted);font-family:var(--narrow);font-size:15px;font-weight:700;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-underline-offset:4px;padding:8px 0;line-height:1.5;width:100%;text-align:center}
 .link-recover button:hover{color:var(--text)}
@@ -179,6 +181,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="estado-desc"   id="estado-desc"></div>
     <div class="hora-badge"    id="hora-badge" style="display:none"></div>
     <div class="recordatorio" id="recordatorio"></div>
+    <div class="aviso-mostrador" id="aviso-mostrador">
+      <span class="aviso-icono">📢</span>
+      <span id="aviso-texto">Por favor, acuda al mostrador de despachos</span>
+    </div>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 
@@ -227,6 +233,7 @@ const T = {
     recover_btn: 'Consultar',
     recover_err: 'Matrícula no encontrada en los registros de hoy.',
     prefix: '+34',
+    aviso_mostrador: 'Por favor, acuda al mostrador de despachos',
   },
   en: {
     activo:    'System active',
@@ -257,6 +264,7 @@ const T = {
     recover_btn: 'Check',
     recover_err: 'Plate number not found in today\'s records.',
     prefix: '+44',
+    aviso_mostrador: 'Please proceed to the customs desk',
   },
   fr: {
     activo:    'Système actif',
@@ -287,6 +295,7 @@ const T = {
     recover_btn: 'Consulter',
     recover_err: 'Immatriculation introuvable dans les enregistrements d\'aujourd\'hui.',
     prefix: '+33',
+    aviso_mostrador: 'Veuillez vous présenter au guichet des douanes',
   },
   pt: {
     activo:    'Sistema ativo',
@@ -317,6 +326,7 @@ const T = {
     recover_btn: 'Consultar',
     recover_err: 'Matrícula não encontrada nos registos de hoje.',
     prefix: '+351',
+    aviso_mostrador: 'Por favor, dirija-se ao balcão de despachos',
   },
   ro: {
     activo:    'Sistem activ',
@@ -347,6 +357,7 @@ const T = {
     recover_btn: 'Verificați',
     recover_err: 'Numărul de înmatriculare nu a fost găsit în înregistrările de astăzi.',
     prefix: '+40',
+    aviso_mostrador: 'Vă rugăm să vă prezentați la ghișeul vamal',
   },
   pl: {
     activo:    'System aktywny',
@@ -377,6 +388,7 @@ const T = {
     recover_btn: 'Sprawdź',
     recover_err: 'Numer rejestracyjny nie został znaleziony w dzisiejszych rekordach.',
     prefix: '+48',
+    aviso_mostrador: 'Prosimy zgłosić się do okienka celnego',
   },
   de: {
     activo:    'System aktiv',
@@ -407,6 +419,7 @@ const T = {
     recover_btn: 'Abfragen',
     recover_err: 'Kennzeichen in den heutigen Einträgen nicht gefunden.',
     prefix: '+49',
+    aviso_mostrador: 'Bitte begeben Sie sich zum Zollschalter',
   },
   lt: {
     activo:    'Sistema aktyvi',
@@ -437,6 +450,7 @@ const T = {
     recover_btn: 'Tikrinti',
     recover_err: 'Numeris nerastas šios dienos įrašuose.',
     prefix: '+370',
+    aviso_mostrador: 'Prašome atvykti prie muitinės langelio',
   },
   ru: {
     activo:    'Система активна',
@@ -467,6 +481,7 @@ const T = {
     recover_btn: 'Проверить',
     recover_err: 'Номер не найден в сегодняшних записях.',
     prefix: '+7',
+    aviso_mostrador: 'Пожалуйста, подойдите к стойке таможни',
   },
   it: {
     activo:    'Sistema attivo',
@@ -497,6 +512,7 @@ const T = {
     recover_btn: 'Controlla',
     recover_err: 'Targa non trovata nei registri di oggi.',
     prefix: '+39',
+    aviso_mostrador: 'Si prega di recarsi allo sportello doganale',
   },
 };
 
@@ -620,7 +636,15 @@ function suscribirEstado(id) {
     .on('postgres_changes', {
       event: 'UPDATE', schema: 'public', table: 'despachos', filter: `id=eq.${id}`
     }, payload => {
-      actualizarPantalla(payload.new);
+      const d = payload.new;
+      // Aviso de mostrador
+      if (d.mensaje_mostrador) {
+        mostrarAvisoMostrador();
+      } else {
+        document.getElementById('aviso-mostrador').style.display = 'none';
+      }
+      // Actualizar circuito si cambió
+      if (d.circuito) actualizarPantalla(d);
     })
     .subscribe();
 }
@@ -778,6 +802,19 @@ function flashPantalla() {
     }, 100);
   };
   seq();
+}
+
+// ── AVISO MOSTRADOR ──
+function mostrarAvisoMostrador() {
+  const t = T[idiomaActual];
+  const aviso = document.getElementById('aviso-mostrador');
+  const texto = document.getElementById('aviso-texto');
+  texto.textContent = t.aviso_mostrador || 'Por favor, acuda al mostrador de despachos';
+  aviso.style.display = 'block';
+  // Vibrar en Android
+  if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+  // Flash en iOS
+  flashPantalla();
 }
 
 // ── HELPERS ──

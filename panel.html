@@ -80,6 +80,7 @@ td{padding:15px 16px;vertical-align:middle}
 .ab-n{color:var(--n);background:var(--nbg);border-color:var(--nbd)}
 .ab-r{color:var(--r);background:var(--rbg);border-color:var(--rbd)}
 .ab-ok{color:#0f766e;background:#f0fdfa;border-color:#99f6e4}
+.ab-call{color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe}
 .snd{font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:0;transition:opacity .2s;white-space:nowrap}
 .snd.show{opacity:1}
 .empty{padding:56px 24px;text-align:center;color:var(--muted);font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
@@ -500,6 +501,23 @@ function alertarNueva(r) {
 if (Notification.permission === 'granted') {
   alertasActivas = true;
   actualizarBtnAlerta();
+}
+
+// ── LLAMAR A MOSTRADOR ──
+function llamarMostrador(id, mat) {
+  sb.from('despachos')
+    .update({ mensaje_mostrador: true })
+    .eq('id', id)
+    .then(function(res) {
+      if (res.error) { toast('Error al enviar aviso', 'err'); }
+      else {
+        toast('📢 Aviso enviado a ' + mat, 'ok');
+        // Resetear tras 60 segundos para poder volver a enviar
+        setTimeout(function() {
+          sb.from('despachos').update({ mensaje_mostrador: false }).eq('id', id);
+        }, 60000);
+      }
+    });
 }
 
 // ── TOAST ──
