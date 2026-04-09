@@ -4,12 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel · Despachos Aduaneros</title>
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Despachos">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#1a1816">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Archivo+Narrow:wght@400;500;600;700&display=swap');
@@ -24,34 +18,28 @@
   --p:#4338ca;--pbg:#eef2ff;--pbd:#c7d2fe;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-
-/* TOPBAR */
 .topbar{background:var(--text);height:52px;display:flex;align-items:center;padding:0 28px;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:200}
 .tb-left{display:flex;align-items:center;gap:20px}
 .tb-logo{font-family:var(--narrow);font-size:16px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#f0ede6}
 .tb-sep{width:1px;height:18px;background:#303030}
 .tb-sub{font-family:var(--narrow);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#555}
-.tb-right{display:flex;align-items:center;gap:20px}
+.tb-right{display:flex;align-items:center;gap:14px}
 .live-badge{display:flex;align-items:center;gap:6px;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#4ade80}
 .ldot{width:6px;height:6px;background:#4ade80;border-radius:50%;animation:blink 1.8s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.btn-alerta{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#aaa;font-family:var(--narrow);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;cursor:pointer;transition:all .15s}
+.btn-alerta:hover{background:rgba(255,255,255,.15)}
+.btn-alerta.activa{color:#4ade80;border-color:rgba(74,222,128,.4)}
 .clock{font-family:var(--narrow);font-size:13px;font-weight:600;letter-spacing:.04em;color:#444}
-
-/* STATS */
 .statsbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex}
 .stat{flex:1;padding:14px 20px;border-right:1px solid var(--border2);display:flex;align-items:center;gap:12px}
 .stat:last-child{border-right:none}
 .stat-stripe{width:3px;height:34px;border-radius:2px;flex-shrink:0}
 .stat-num{font-size:36px;font-weight:900;letter-spacing:-.5px;line-height:1;display:block}
 .stat-lbl{font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
-
-/* TABS */
 .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px}
 .tab{padding:14px 22px;font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px}
-.tab:hover{color:var(--text)}
-.tab.on{color:var(--text);border-bottom-color:var(--text)}
-
-/* MAIN */
+.tab:hover{color:var(--text)}.tab.on{color:var(--text);border-bottom-color:var(--text)}
 main{flex:1;padding:20px 28px}
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .toolbar-left{display:flex;align-items:center;gap:10px}
@@ -60,61 +48,41 @@ main{flex:1;padding:20px 28px}
 .filters{display:flex;gap:4px}
 .fb{padding:7px 15px;border:1px solid var(--border);border-radius:4px;background:var(--surface);font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .12s}
 .fb:hover{background:var(--bg);color:var(--text)}.fb.on{background:var(--text);color:var(--bg);border-color:var(--text)}
-
-/* Filtro fecha histórico */
 .hist-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.date-input{padding:6px 12px;border:1px solid var(--border);border-radius:4px;background:var(--surface);font-family:var(--narrow);font-size:13px;font-weight:600;color:var(--text);outline:none;cursor:pointer}
-.date-input:focus{border-color:var(--text)}
-
-/* TABLE */
+.date-input{padding:6px 12px;border:1px solid var(--border);border-radius:4px;background:var(--surface);font-family:var(--narrow);font-size:13px;font-weight:600;color:var(--text);outline:none}
 .tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
 table{width:100%;border-collapse:collapse}
 thead th{padding:11px 16px;font-family:var(--narrow);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
 tbody tr{border-bottom:1px solid var(--border2);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:#faf8f4}
-
-/* Fila archivada (verde finalizado) */
 tbody tr.archivada{opacity:.45}
 tbody tr.archivada .td-mat{text-decoration:line-through;text-decoration-color:var(--v)}
-
 td{padding:15px 16px;vertical-align:middle}
 .td-mat{font-family:var(--narrow);font-size:24px;font-weight:700;letter-spacing:.06em}
 .td-tel{font-family:var(--narrow);font-size:16px;color:var(--muted);font-weight:500}
 .td-hora{font-family:var(--narrow);font-size:16px;color:var(--muted);font-weight:600;letter-spacing:.03em}
-
-/* BADGES */
 .badge{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:4px;font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border:1px solid;white-space:nowrap}
 .bp{color:var(--p);background:var(--pbg);border-color:var(--pbd)}
 .bv{color:var(--v);background:var(--vbg);border-color:var(--vbd)}
 .bn{color:var(--n);background:var(--nbg);border-color:var(--nbd)}
 .br{color:var(--r);background:var(--rbg);border-color:var(--rbd)}
-
-/* Contador naranja */
-.naranja-timer{display:inline-flex;align-items:center;gap:4px;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--n);margin-left:7px;background:var(--nbg);border:1px solid var(--nbd);padding:3px 9px;border-radius:3px}
-.timer-warn{color:var(--r);background:var(--rbg);border-color:var(--rbd)}
-
-/* Viendo tag */
+.naranja-timer{display:inline-flex;align-items:center;gap:4px;font-family:var(--narrow);font-size:13px;font-weight:700;color:var(--n);margin-left:7px;background:var(--nbg);border:1px solid var(--nbd);padding:3px 9px;border-radius:3px}
+.naranja-timer.warn{color:var(--r);background:var(--rbg);border-color:var(--rbd)}
 .viendo-tag{display:inline-flex;align-items:center;gap:4px;font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#22c55e;margin-left:7px}
 .viendo-dot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:blink 1.8s ease-in-out infinite}
-
-/* ACCIONES */
-.acts{display:flex;align-items:center;gap:5px}
+.nuevo-badge{display:inline-flex;align-items:center;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#dc2626;border-radius:3px;padding:2px 7px;margin-left:8px;animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+.acts{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .ab{padding:8px 14px;border-radius:4px;border:1px solid;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:filter .12s,transform .1s;white-space:nowrap}
 .ab:hover{filter:brightness(.9)}.ab:active{transform:scale(.97)}
 .ab-v{color:var(--v);background:var(--vbg);border-color:var(--vbd)}
 .ab-n{color:var(--n);background:var(--nbg);border-color:var(--nbd)}
 .ab-r{color:var(--r);background:var(--rbg);border-color:var(--rbd)}
-.ab-arc{color:var(--muted);background:var(--bg);border-color:var(--border);font-size:10px}
-.ab-resolve{color:#0f766e;background:#f0fdfa;border-color:#99f6e4;font-weight:700}
-
+.ab-ok{color:#0f766e;background:#f0fdfa;border-color:#99f6e4}
 .snd{font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:0;transition:opacity .2s;white-space:nowrap}
 .snd.show{opacity:1}
-
-/* EMPTY */
 .empty{padding:56px 24px;text-align:center;color:var(--muted);font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-
-/* ── MODAL ROJO ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:320px;box-shadow:0 24px 64px rgba(0,0,0,.2);animation:modalIn .2s cubic-bezier(.22,1,.36,1) both}
@@ -122,26 +90,18 @@ td{padding:15px 16px;vertical-align:middle}
 .modal-title{font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--r);margin-bottom:6px}
 .modal-mat{font-family:var(--narrow);font-size:22px;font-weight:900;letter-spacing:.08em;color:var(--text);margin-bottom:20px}
 .modal-opts{display:flex;flex-direction:column;gap:8px}
-.modal-btn{padding:14px 18px;border-radius:8px;border:1px solid var(--rbd);background:var(--rbg);color:var(--r);font-family:var(--narrow);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:14px;transition:background .12s,transform .1s;text-align:left}
+.modal-btn{padding:14px 18px;border-radius:8px;border:1px solid var(--rbd);background:var(--rbg);color:var(--r);font-family:var(--narrow);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:14px;transition:background .12s,transform .1s;text-align:left;width:100%}
 .modal-btn:hover{background:#ffe0e3;transform:translateX(2px)}
-.modal-btn:active{transform:scale(.98)}
-.modal-btn .mh{font-size:22px;font-weight:900;letter-spacing:.04em;min-width:60px}
+.modal-btn .mh{font-size:22px;font-weight:900;min-width:60px}
 .modal-btn .ml{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-top:1px}
 .modal-cancel{margin-top:12px;width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:background .12s}
 .modal-cancel:hover{background:var(--bg)}
-
-/* BADGE NUEVA MATRÍCULA */
-.nuevo-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#dc2626;border-radius:3px;padding:2px 7px;margin-left:6px;animation:nuevoBadge .4s cubic-bezier(.34,1.56,.64,1) both}
-@keyframes nuevoBadge{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
-
-/* TOAST */
 .toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#f0ede6;font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.04em;padding:11px 18px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);transform:translateY(60px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);z-index:300;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}.toast.err{background:#991b1b}.toast.ok{background:#166534}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="tb-left">
     <span class="tb-logo">Despachos Aduaneros</span>
@@ -150,12 +110,11 @@ td{padding:15px 16px;vertical-align:middle}
   </div>
   <div class="tb-right">
     <div class="live-badge"><div class="ldot"></div>Tiempo real</div>
-    <button id="btn-notif" onclick="activarNotificaciones()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#aaa;font-family:var(--narrow);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;cursor:pointer;transition:all .15s" title="Activar alertas de nueva matrícula">🔔 Alertas</button>
+    <button class="btn-alerta" id="btn-alerta" onclick="activarNotificaciones()">🔔 Alertas</button>
     <div class="clock" id="clock">—</div>
   </div>
 </div>
 
-<!-- STATS (solo hoy) -->
 <div class="statsbar" id="statsbar">
   <div class="stat"><div class="stat-stripe" style="background:var(--text)"></div><div><span class="stat-num" id="s-tot">0</span><span class="stat-lbl">Total hoy</span></div></div>
   <div class="stat"><div class="stat-stripe" style="background:var(--p)"></div><div><span class="stat-num" style="color:var(--p)" id="s-pen">0</span><span class="stat-lbl">Pendientes</span></div></div>
@@ -164,48 +123,39 @@ td{padding:15px 16px;vertical-align:middle}
   <div class="stat"><div class="stat-stripe" style="background:var(--r)"></div><div><span class="stat-num" style="color:var(--r)" id="s-roj">0</span><span class="stat-lbl">Rojo · Inspección</span></div></div>
 </div>
 
-<!-- TABS -->
 <div class="tabs">
   <div class="tab on" id="tab-hoy"  onclick="cambiarTab('hoy')">Hoy</div>
   <div class="tab"    id="tab-hist" onclick="cambiarTab('hist')">Histórico</div>
 </div>
 
-<!-- MAIN -->
 <main>
-
-  <!-- TOOLBAR HOY -->
   <div id="toolbar-hoy" class="toolbar">
     <div class="toolbar-left">
       <span class="toolbar-title">Vehículos del día</span>
       <span class="count-bubble" id="cnt">0</span>
     </div>
     <div class="filters">
-      <button class="fb on"  onclick="setFiltro('todos',this)">Todos</button>
-      <button class="fb"     onclick="setFiltro('pendiente',this)">Pendientes</button>
-      <button class="fb"     onclick="setFiltro('verde',this)">Verde</button>
-      <button class="fb"     onclick="setFiltro('naranja',this)">Naranja</button>
-      <button class="fb"     onclick="setFiltro('rojo',this)">Rojo</button>
-      <button class="fb"     onclick="setFiltro('archivado',this)">Archivados</button>
+      <button class="fb on" onclick="setFiltro('todos',this)">Todos</button>
+      <button class="fb"    onclick="setFiltro('pendiente',this)">Pendientes</button>
+      <button class="fb"    onclick="setFiltro('verde',this)">Verde</button>
+      <button class="fb"    onclick="setFiltro('naranja',this)">Naranja</button>
+      <button class="fb"    onclick="setFiltro('rojo',this)">Rojo</button>
+      <button class="fb"    onclick="setFiltro('archivado',this)">Archivados</button>
     </div>
   </div>
 
-  <!-- TOOLBAR HISTÓRICO -->
   <div id="toolbar-hist" class="hist-toolbar" style="display:none">
     <span class="toolbar-title">Fecha</span>
     <input type="date" id="fecha-hist" class="date-input" onchange="cargarHistorico()">
     <span class="count-bubble" id="cnt-hist">0</span>
   </div>
 
-  <!-- TABLA -->
   <div class="tbl-wrap">
     <table>
       <thead>
         <tr>
-          <th>Matrícula</th>
-          <th>Teléfono</th>
-          <th>Entrada</th>
-          <th>Circuito / Estado</th>
-          <th id="th-acciones">Asignar circuito</th>
+          <th>Matrícula</th><th>Teléfono</th><th>Entrada</th>
+          <th>Circuito</th><th id="th-acc">Asignar circuito</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -213,23 +163,19 @@ td{padding:15px 16px;vertical-align:middle}
   </div>
 </main>
 
-<!-- MODAL ROJO -->
-<div class="modal-overlay" id="modal-rojo" onclick="cerrarModal(event)">
+<div class="modal-overlay" id="modal-rojo" onclick="cerrarModalFuera(event)">
   <div class="modal">
     <div class="modal-title">🔴 Inspección física</div>
     <div class="modal-mat" id="modal-mat">—</div>
     <div class="modal-opts">
       <button class="modal-btn" onclick="confirmarRojo('rojo-10')">
-        <span class="mh">10:00</span>
-        <span><b>Inspección de mañana</b><span class="ml">Turno primera hora</span></span>
+        <span class="mh">10:00</span><span><b>Inspección mañana</b><span class="ml">Turno primera hora</span></span>
       </button>
       <button class="modal-btn" onclick="confirmarRojo('rojo-12')">
-        <span class="mh">12:00</span>
-        <span><b>Inspección de mediodía</b><span class="ml">Turno segunda hora</span></span>
+        <span class="mh">12:00</span><span><b>Inspección mediodía</b><span class="ml">Turno segunda hora</span></span>
       </button>
       <button class="modal-btn" onclick="confirmarRojo('rojo-14')">
-        <span class="mh">14:00</span>
-        <span><b>Inspección de tarde</b><span class="ml">Turno tercera hora</span></span>
+        <span class="mh">14:00</span><span><b>Inspección tarde</b><span class="ml">Turno tercera hora</span></span>
       </button>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('modal-rojo').classList.remove('open')">Cancelar</button>
@@ -245,14 +191,68 @@ const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, ANON_KEY);
 
-let rows = [], filtro = 'todos', tabActual = 'hoy';
-let rojoId = null, rojoMat = null;
+// ── ESTADO GLOBAL (todo declarado antes de usarse) ──
+var rows            = [];
+var filtro          = 'todos';
+var tabActual       = 'hoy';
+var rojoId          = null;
+var rojoMat         = null;
+var alertasActivas  = false;
+var audioCtx        = null;
+var tituloOriginal  = 'Panel · Despachos Aduaneros';
+var parpadeoTimer   = null;
+var conocidos       = new Set();   // IDs ya vistos
+var nuevosIds       = new Set();   // IDs recién llegados (badge NUEVO)
 
 // ── RELOJ ──
-setInterval(() => {
+setInterval(function() {
   document.getElementById('clock').textContent =
-    new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
 }, 1000);
+
+// ── AUDIO: activar contexto en primer toque ──
+document.addEventListener('click', function() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  } else if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+});
+
+// ── CARGA + REALTIME ──
+function load() {
+  var hoy = new Date().toISOString().split('T')[0];
+  sb.from('despachos').select('*')
+    .gte('hora_entrada', hoy + 'T00:00:00')
+    .order('hora_entrada', {ascending: false})
+    .then(function(res) {
+      var data = res.data || [];
+      var esPrimera = conocidos.size === 0;
+      nuevosIds.clear();
+      data.forEach(function(r) {
+        if (!esPrimera && !conocidos.has(r.id)) {
+          nuevosIds.add(r.id);
+          alertarNueva(r);
+          setTimeout(function() { nuevosIds.delete(r.id); }, 30000);
+        }
+        conocidos.add(r.id);
+      });
+      rows = data;
+      if (tabActual === 'hoy') renderHoy();
+    });
+}
+
+sb.channel('panel-rt')
+  .on('postgres_changes', {event:'*', schema:'public', table:'despachos'}, function() {
+    if (tabActual === 'hoy') load();
+  })
+  .subscribe();
+
+load();
+
+setInterval(function() {
+  if (tabActual === 'hoy') actualizarTimers();
+}, 60000);
 
 // ── TABS ──
 function cambiarTab(tab) {
@@ -262,356 +262,220 @@ function cambiarTab(tab) {
   document.getElementById('toolbar-hoy').style.display  = tab === 'hoy'  ? 'flex' : 'none';
   document.getElementById('toolbar-hist').style.display = tab === 'hist' ? 'flex' : 'none';
   document.getElementById('statsbar').style.display     = tab === 'hoy'  ? 'flex' : 'none';
-  document.getElementById('th-acciones').style.display  = tab === 'hoy'  ? '' : 'none';
-
+  document.getElementById('th-acc').style.display       = tab === 'hoy'  ? ''     : 'none';
   if (tab === 'hoy') {
     load();
   } else {
-    // Poner fecha de ayer por defecto en histórico
-    const ayer = new Date();
+    var ayer = new Date();
     ayer.setDate(ayer.getDate() - 1);
     document.getElementById('fecha-hist').value = ayer.toISOString().split('T')[0];
     cargarHistorico();
   }
 }
 
-// ── CARGA HOY ──
-async function load() {
-  const hoy = new Date().toISOString().split('T')[0];
-  const { data } = await sb.from('despachos').select('*')
-    .gte('hora_entrada', `${hoy}T00:00:00`)
-    .order('hora_entrada', { ascending: false });
-  const anterior = rows.length;
-  const esPrimeraCarga = matriculasConocidas.size === 0;
-  rows = data || [];
-  if (esPrimeraCarga) {
-    inicializarMatriculas();
-  } else {
-    detectarNuevas(rows);
-  }
-  renderHoy();
-}
-
-// Realtime - actualiza todos los paneles abiertos
-sb.channel('panel-rt')
-  .on('postgres_changes', { event:'*', schema:'public', table:'despachos' }, () => {
-    if (tabActual === 'hoy') load();
-  })
-  .subscribe();
-
-load();
-
-// Registrar Service Worker para PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-
-// Auto-activar alertas si el permiso ya estaba concedido
-if (Notification.permission === 'granted') {
-  alertasActivas = true;
-  actualizarBtnNotif();
-}
-
-// Contador para actualizar timers naranja cada minuto
-setInterval(() => {
-  if (tabActual === 'hoy') actualizarTimers();
-}, 60000);
-
 // ── RENDER HOY ──
 function renderHoy() {
-  const list =
-    filtro === 'todos'     ? rows.filter(r => !r.archivado) :
-    filtro === 'pendiente' ? rows.filter(r => !r.circuito && !r.archivado) :
-    filtro === 'rojo'      ? rows.filter(r => r.circuito?.startsWith('rojo') && !r.archivado) :
-    filtro === 'archivado' ? rows.filter(r => r.archivado) :
-                             rows.filter(r => r.circuito === filtro && !r.archivado);
+  var list;
+  if (filtro === 'todos')      list = rows.filter(function(r){ return !r.archivado; });
+  else if (filtro==='pendiente') list = rows.filter(function(r){ return !r.circuito && !r.archivado; });
+  else if (filtro==='rojo')    list = rows.filter(function(r){ return r.circuito && r.circuito.indexOf('rojo')===0 && !r.archivado; });
+  else if (filtro==='archivado') list = rows.filter(function(r){ return r.archivado; });
+  else                         list = rows.filter(function(r){ return r.circuito===filtro && !r.archivado; });
 
-  // Stats (siempre sobre todo el día)
   document.getElementById('s-tot').textContent = rows.length;
-  document.getElementById('s-pen').textContent = rows.filter(r => !r.circuito && !r.archivado).length;
-  document.getElementById('s-ver').textContent = rows.filter(r => r.circuito === 'verde').length;
-  document.getElementById('s-nar').textContent = rows.filter(r => r.circuito === 'naranja' && !r.archivado).length;
-  document.getElementById('s-roj').textContent = rows.filter(r => r.circuito?.startsWith('rojo') && !r.archivado).length;
+  document.getElementById('s-pen').textContent = rows.filter(function(r){ return !r.circuito && !r.archivado; }).length;
+  document.getElementById('s-ver').textContent = rows.filter(function(r){ return r.circuito==='verde'; }).length;
+  document.getElementById('s-nar').textContent = rows.filter(function(r){ return r.circuito==='naranja' && !r.archivado; }).length;
+  document.getElementById('s-roj').textContent = rows.filter(function(r){ return r.circuito && r.circuito.indexOf('rojo')===0 && !r.archivado; }).length;
   document.getElementById('cnt').textContent   = list.length;
-
   renderTabla(list, true);
 }
 
 // ── RENDER TABLA ──
-function renderTabla(list, conAcciones) {
-  const tb = document.getElementById('tbody');
-
+function renderTabla(list, conAcc) {
+  var tb = document.getElementById('tbody');
   if (!list.length) {
     tb.innerHTML = '<tr><td colspan="5"><div class="empty">— Sin vehículos en esta categoría —</div></td></tr>';
     return;
   }
+  var html = '';
+  list.forEach(function(r) {
+    var hora = new Date(r.hora_entrada).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    var bi   = badgeInfo(r.circuito);
+    var arch = r.archivado ? 'archivada' : '';
 
-  const filas = list.map(r => {
-    const hora = new Date(r.hora_entrada)
-      .toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
-    const { cls, lbl } = badgeInfo(r.circuito);
-    const archivada = r.archivado ? 'archivada' : '';
-
-    // Timer naranja
-    let timerTag = '';
+    var timer = '';
     if (r.circuito === 'naranja' && !r.archivado) {
-      const mins = minutosDesde(r.hora_entrada);
-      const warn = mins >= 25;
-      timerTag = '<span class="naranja-timer ' + (warn ? 'timer-warn' : '') + '">' + formatMins(mins) + '</span>';
+      var mins = minDesde(r.hora_entrada);
+      timer = '<span class="naranja-timer' + (mins>=25?' warn':'') + '">' + fmtMin(mins) + '</span>';
     }
 
-    const viendo = r.tiene_pantalla_abierta
+    var viendo = r.tiene_pantalla_abierta
       ? '<span class="viendo-tag"><div class="viendo-dot"></div>En pantalla</span>' : '';
 
-    // Badge NUEVO
-    const esNuevo = nuevasIds.has(r.id);
-    const nuevoBadge = esNuevo ? '<span class="nuevo-badge">NUEVO</span>' : '';
+    var nuevo = nuevosIds.has(r.id) ? '<span class="nuevo-badge">NUEVO</span>' : '';
 
-    // Acciones
-    const id  = r.id;
-    const mat = r.matricula;
-    const tel = r.telefono;
-    let acciones = '';
-    if (conAcciones && !r.archivado) {
-      let btnExtra = '';
+    var acc = '';
+    if (conAcc && !r.archivado) {
+      var extra = '';
       if (r.circuito === 'naranja') {
-        btnExtra = '<button class="ab ab-resolve" onclick="resolver(\'' + id + '\',\'naranja\',\'' + mat + '\')">✓ Autorizado</button>';
-      } else if (r.circuito && r.circuito.startsWith('rojo')) {
-        btnExtra = '<button class="ab ab-resolve" onclick="resolver(\'' + id + '\',\'rojo\',\'' + mat + '\')">✓ Inspeccionado</button>';
+        extra = '<button class="ab ab-ok" onclick="resolver(\'' + r.id + '\',\'naranja\',\'' + r.matricula + '\')">✓ Autorizado</button>';
+      } else if (r.circuito && r.circuito.indexOf('rojo') === 0) {
+        extra = '<button class="ab ab-ok" onclick="resolver(\'' + r.id + '\',\'rojo\',\'' + r.matricula + '\')">✓ Inspeccionado</button>';
       }
-      acciones = '<div class="acts">' +
-        '<button class="ab ab-v" onclick="asignar(\'' + id + '\',\'verde\',\'' + mat + '\')">✓ Verde</button>' +
-        '<button class="ab ab-n" onclick="asignar(\'' + id + '\',\'naranja\',\'' + mat + '\')">⏳ Naranja</button>' +
-        '<button class="ab ab-r" onclick="abrirModalRojo(\'' + id + '\',\'' + mat + '\')">🔴 Rojo…</button>' +
-        btnExtra +
-        '<span class="snd" id="snd-' + id + '">aplicando…</span>' +
-        '</div>';
-    } else if (conAcciones && r.archivado) {
-      acciones = '<span style="font-family:var(--narrow);font-size:11px;color:var(--muted)">Archivado</span>';
+      acc = '<div class="acts">'
+        + '<button class="ab ab-v" onclick="asignar(\'' + r.id + '\',\'verde\',\'' + r.matricula + '\')">✓ Verde</button>'
+        + '<button class="ab ab-n" onclick="asignar(\'' + r.id + '\',\'naranja\',\'' + r.matricula + '\')">⏳ Naranja</button>'
+        + '<button class="ab ab-r" onclick="abrirRojo(\'' + r.id + '\',\'' + r.matricula + '\')">🔴 Rojo…</button>'
+        + extra
+        + '<span class="snd" id="snd-' + r.id + '">aplicando…</span>'
+        + '</div>';
+    } else if (conAcc && r.archivado) {
+      acc = '<span style="font-family:var(--narrow);font-size:11px;color:var(--muted)">Archivado</span>';
     }
 
-    return "<tr class='" + archivada + "' id='row-" + id + "'>" +
-      "<td class='td-mat'>" + mat + nuevoBadge + "</td>" +
-      "<td class='td-tel'>" + tel + "</td>" +
-      "<td class='td-hora'>" + hora + "</td>" +
-      "<td><span class='badge " + cls + "'>" + lbl + "</span>" + timerTag + viendo + "</td>" +
-      (conAcciones ? "<td>" + acciones + "</td>" : "") +
-      "</tr>";
+    html += '<tr class="' + arch + '" id="row-' + r.id + '">'
+      + '<td class="td-mat">' + r.matricula + nuevo + '</td>'
+      + '<td class="td-tel">' + r.telefono + '</td>'
+      + '<td class="td-hora">' + hora + '</td>'
+      + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + timer + viendo + '</td>'
+      + (conAcc ? '<td>' + acc + '</td>' : '')
+      + '</tr>';
   });
-
-  tb.innerHTML = filas.join('');
+  tb.innerHTML = html;
 }
 
 function badgeInfo(c) {
-  if (!c)            return { cls:'bp', lbl:'● Pendiente' };
-  if (c==='verde')   return { cls:'bv', lbl:'✓ Despachado' };
-  if (c==='naranja') return { cls:'bn', lbl:'⏳ Autorización' };
-  if (c==='rojo-10') return { cls:'br', lbl:'🔴 Insp. 10:00h' };
-  if (c==='rojo-12') return { cls:'br', lbl:'🔴 Insp. 12:00h' };
-  if (c==='rojo-14') return { cls:'br', lbl:'🔴 Insp. 14:00h' };
-  return { cls:'bp', lbl: c };
+  if (!c)              return {cls:'bp', lbl:'● Pendiente'};
+  if (c==='verde')     return {cls:'bv', lbl:'✓ Despachado'};
+  if (c==='naranja')   return {cls:'bn', lbl:'⏳ Autorización'};
+  if (c==='rojo-10')   return {cls:'br', lbl:'🔴 Insp. 10:00h'};
+  if (c==='rojo-12')   return {cls:'br', lbl:'🔴 Insp. 12:00h'};
+  if (c==='rojo-14')   return {cls:'br', lbl:'🔴 Insp. 14:00h'};
+  return {cls:'bp', lbl:c};
 }
 
 // ── TIMERS NARANJA ──
-function minutosDesde(iso) {
-  return Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-}
-
-function formatMins(m) {
-  if (m < 60) return `${m}m`;
-  return `${Math.floor(m/60)}h ${m%60}m`;
-}
+function minDesde(iso) { return Math.floor((Date.now() - new Date(iso).getTime()) / 60000); }
+function fmtMin(m) { return m < 60 ? m + 'm' : Math.floor(m/60) + 'h ' + (m%60) + 'm'; }
 
 function actualizarTimers() {
-  rows.filter(r => r.circuito === 'naranja' && !r.archivado).forEach(r => {
-    const tag = document.querySelector(`#row-${r.id} .naranja-timer`);
-    if (!tag) return;
-    const mins = minutosDesde(r.hora_entrada);
-    tag.textContent = formatMins(mins);
-    tag.classList.toggle('timer-warn', mins >= 25);
+  rows.filter(function(r){ return r.circuito==='naranja' && !r.archivado; }).forEach(function(r) {
+    var el = document.querySelector('#row-' + r.id + ' .naranja-timer');
+    if (!el) return;
+    var m = minDesde(r.hora_entrada);
+    el.textContent = fmtMin(m);
+    el.classList.toggle('warn', m >= 25);
   });
 }
 
 // ── MODAL ROJO ──
-function abrirModalRojo(id, mat) {
-  rojoId  = id;
-  rojoMat = mat;
+function abrirRojo(id, mat) {
+  rojoId = id; rojoMat = mat;
   document.getElementById('modal-mat').textContent = mat;
   document.getElementById('modal-rojo').classList.add('open');
 }
-
-function cerrarModal(e) {
+function cerrarModalFuera(e) {
   if (e.target === document.getElementById('modal-rojo'))
     document.getElementById('modal-rojo').classList.remove('open');
 }
-
-async function confirmarRojo(circuito) {
+function confirmarRojo(circuito) {
   document.getElementById('modal-rojo').classList.remove('open');
-  await asignar(rojoId, circuito, rojoMat);
+  asignar(rojoId, circuito, rojoMat);
 }
 
-// ── ASIGNAR CIRCUITO ──
-async function asignar(id, circuito, mat) {
-  const snd = document.getElementById(`snd-${id}`);
+// ── ASIGNAR ──
+function asignar(id, circuito, mat) {
+  var snd = document.getElementById('snd-' + id);
   if (snd) { snd.textContent = 'aplicando…'; snd.classList.add('show'); }
-
-  // Si es verde, archivar automáticamente
-  const archivado = circuito === 'verde';
-
-  const { error } = await sb.from('despachos')
-    .update({ circuito, archivado })
-    .eq('id', id);
-
-  if (error) {
-    toast('Error al actualizar', 'err');
-  } else {
-    const msg = archivado
-      ? `✓ ${mat} despachado y archivado`
-      : `Circuito asignado: ${labelCorto(circuito)}`;
-    toast(msg, archivado ? 'ok' : '');
-  }
-
-  if (snd) snd.classList.remove('show');
+  var archivado = circuito === 'verde';
+  sb.from('despachos').update({circuito: circuito, archivado: archivado}).eq('id', id)
+    .then(function(res) {
+      if (res.error) { toast('Error al actualizar', 'err'); }
+      else { toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : ''); }
+      if (snd) snd.classList.remove('show');
+    });
 }
 
-// ── RESOLVER (naranja autorizado / rojo inspeccionado) ──
-async function resolver(id, tipo, mat) {
-  const snd = document.getElementById(`snd-${id}`);
+function resolver(id, tipo, mat) {
+  var snd = document.getElementById('snd-' + id);
   if (snd) { snd.textContent = 'archivando…'; snd.classList.add('show'); }
-
-  const { error } = await sb.from('despachos')
-    .update({ archivado: true })
-    .eq('id', id);
-
-  if (error) {
-    toast('Error al archivar', 'err');
-  } else {
-    const msg = tipo === 'naranja'
-      ? `✓ ${mat} autorizado y archivado`
-      : `✓ ${mat} inspeccionado y archivado`;
-    toast(msg, 'ok');
-  }
-  if (snd) snd.classList.remove('show');
+  sb.from('despachos').update({archivado: true}).eq('id', id)
+    .then(function(res) {
+      if (res.error) { toast('Error al archivar', 'err'); }
+      else { toast('✓ ' + mat + (tipo==='naranja' ? ' autorizado' : ' inspeccionado') + ' y archivado', 'ok'); }
+      if (snd) snd.classList.remove('show');
+    });
 }
 
 function labelCorto(c) {
   if (c==='verde')   return 'Verde · Despachado';
   if (c==='naranja') return 'Naranja · Autorización';
-  if (c?.startsWith('rojo')) return 'Rojo · ' + c.split('-')[1] + ':00h';
+  if (c && c.indexOf('rojo')===0) return 'Rojo · ' + c.split('-')[1] + ':00h';
   return c;
 }
 
 // ── HISTÓRICO ──
-async function cargarHistorico() {
-  const fecha = document.getElementById('fecha-hist').value;
+function cargarHistorico() {
+  var fecha = document.getElementById('fecha-hist').value;
   if (!fecha) return;
-
-  const { data } = await sb.from('despachos').select('*')
-    .gte('hora_entrada', `${fecha}T00:00:00`)
-    .lt('hora_entrada',  `${fecha}T23:59:59`)
-    .order('hora_entrada', { ascending: false });
-
-  const list = data || [];
-  document.getElementById('cnt-hist').textContent = list.length;
-  renderTabla(list, false);
+  sb.from('despachos').select('*')
+    .gte('hora_entrada', fecha + 'T00:00:00')
+    .lt('hora_entrada',  fecha + 'T23:59:59')
+    .order('hora_entrada', {ascending: false})
+    .then(function(res) {
+      var list = res.data || [];
+      document.getElementById('cnt-hist').textContent = list.length;
+      renderTabla(list, false);
+    });
 }
 
 // ── FILTROS ──
 function setFiltro(f, btn) {
   filtro = f;
-  document.querySelectorAll('.fb').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.fb').forEach(function(b){ b.classList.remove('on'); });
   btn.classList.add('on');
   renderHoy();
 }
 
-// ── PARPADEO TÍTULO + AUDIO CONTEXT ──
-let tituloOriginal = document.title;
-let parpadeoInterval = null;
-let audioCtx = null;
-
-// Crear AudioContext al primer toque (necesario en iOS)
-document.addEventListener('click', () => {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  } else if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
+// ── ALERTAS ──
+function activarNotificaciones() {
+  if (!('Notification' in window)) { toast('Navegador sin soporte de notificaciones', 'err'); return; }
+  if (Notification.permission === 'granted') {
+    alertasActivas = true;
+    actualizarBtnAlerta();
+    toast('Alertas activas', 'ok');
+    return;
   }
-}, { once: false });
+  Notification.requestPermission().then(function(p) {
+    alertasActivas = p === 'granted';
+    actualizarBtnAlerta();
+    toast(alertasActivas ? 'Alertas activadas' : 'Permiso denegado — solo parpadeo de título', '');
+  });
+}
 
-function parpadearTitulo(matricula) {
-  let visible = true;
-  let count = 0;
-  if (parpadeoInterval) clearInterval(parpadeoInterval);
-  parpadeoInterval = setInterval(() => {
-    document.title = visible ? '🚛 ' + matricula + ' — NUEVA ENTRADA' : tituloOriginal;
-    visible = !visible;
-    count++;
-    if (count >= 20) {
-      clearInterval(parpadeoInterval);
-      document.title = tituloOriginal;
-    }
+function actualizarBtnAlerta() {
+  var btn = document.getElementById('btn-alerta');
+  if (alertasActivas) { btn.textContent = '🔔 Activas'; btn.classList.add('activa'); }
+}
+
+function parpadearTitulo(mat) {
+  var n = 0;
+  if (parpadeoTimer) clearInterval(parpadeoTimer);
+  parpadeoTimer = setInterval(function() {
+    document.title = (n % 2 === 0) ? '🚛 ' + mat + ' — NUEVA ENTRADA' : tituloOriginal;
+    n++;
+    if (n >= 20) { clearInterval(parpadeoTimer); document.title = tituloOriginal; }
   }, 800);
 }
 
-// ── ALERTAS DE NUEVA MATRÍCULA ──
-let matriculasConocidas = new Set();
-let nuevasIds = new Set();
-let alertasActivas = false;
-
-function inicializarMatriculas() {
-  rows.forEach(r => matriculasConocidas.add(r.id));
-}
-
-function activarNotificaciones() {
-  if (!('Notification' in window)) {
-    toast('Tu navegador no soporta notificaciones', 'err'); return;
-  }
-  if (Notification.permission === 'granted') {
-    alertasActivas = true;
-    actualizarBtnNotif();
-    toast('Alertas ya activas', 'ok'); return;
-  }
-  Notification.requestPermission().then(perm => {
-    alertasActivas = perm === 'granted';
-    actualizarBtnNotif();
-    if (alertasActivas) toast('Alertas activadas', 'ok');
-    else toast('Permiso denegado — solo sonido activo', '');
-  });
-}
-
-function actualizarBtnNotif() {
-  const btn = document.getElementById('btn-notif');
-  if (!btn) return;
-  if (alertasActivas || Notification.permission === 'granted') {
-    btn.style.color = '#4ade80';
-    btn.style.borderColor = 'rgba(74,222,128,.4)';
-    btn.textContent = '🔔 Activas';
-  }
-}
-
-function detectarNuevas(nuevasRows) {
-  nuevasIds.clear();
-  nuevasRows.forEach(r => {
-    if (!matriculasConocidas.has(r.id)) {
-      matriculasConocidas.add(r.id);
-      nuevasIds.add(r.id);
-      alertarNuevaMatricula(r);
-      // Limpiar badge después de 30s
-      setTimeout(() => { nuevasIds.delete(r.id); }, 30000);
-    }
-  });
-}
-
-function alertarNuevaMatricula(r) {
-  // 1. Parpadeo del título (funciona en todos los navegadores y dispositivos)
+function alertarNueva(r) {
   parpadearTitulo(r.matricula);
-
-  // 2. Sonido — usa el AudioContext pre-activado por el usuario
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc  = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    var osc  = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.frequency.setValueAtTime(880,  audioCtx.currentTime);
@@ -622,34 +486,30 @@ function alertarNuevaMatricula(r) {
     osc.start(audioCtx.currentTime);
     osc.stop(audioCtx.currentTime + 0.5);
   } catch(e) {}
-
-  // 2. Notificación del navegador (funciona aunque el panel esté minimizado)
   if (alertasActivas && Notification.permission === 'granted') {
     try {
       new Notification('Nueva matrícula registrada', {
         body: r.matricula + ' · ' + r.telefono,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a1816"/><text y=".9em" font-size="80" x="10">&#x1F69B;</text></svg>',
         tag: r.id,
-        requireInteraction: false,
       });
     } catch(e) {}
   }
+}
 
-  // 3. Badge "NUEVO" en la fila durante 30 segundos
-  setTimeout(() => {
-    const badge = document.getElementById(`nuevo-${r.id}`);
-    if (badge) badge.style.display = 'none';
-  }, 30000);
+// Auto-activar si ya hay permiso
+if (Notification.permission === 'granted') {
+  alertasActivas = true;
+  actualizarBtnAlerta();
 }
 
 // ── TOAST ──
-let toastTimer;
-function toast(msg, tipo = '') {
-  const el = document.getElementById('toast');
+var toastTimer;
+function toast(msg, tipo) {
+  var el = document.getElementById('toast');
   el.textContent = msg;
-  el.className = `toast show ${tipo}`;
+  el.className = 'toast show' + (tipo ? ' ' + tipo : '');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 3500);
 }
 </script>
 </body>
