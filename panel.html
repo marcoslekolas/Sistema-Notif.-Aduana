@@ -357,32 +357,35 @@ function renderTabla(list, conAcciones) {
     const nuevoBadge = esNuevo ? '<span class="nuevo-badge">NUEVO</span>' : '';
 
     // Acciones
+    const id  = r.id;
+    const mat = r.matricula;
+    const tel = r.telefono;
     let acciones = '';
     if (conAcciones && !r.archivado) {
       let btnExtra = '';
       if (r.circuito === 'naranja') {
-        btnExtra = '<button class="ab ab-resolve" onclick="resolver('' + r.id + '','naranja','' + r.matricula + '')">✓ Autorizado</button>';
+        btnExtra = "<button class='ab ab-resolve' onclick="resolver('" + id + "','naranja','" + mat + "')">✓ Autorizado</button>";
       } else if (r.circuito && r.circuito.startsWith('rojo')) {
-        btnExtra = '<button class="ab ab-resolve" onclick="resolver('' + r.id + '','rojo','' + r.matricula + '')">✓ Inspeccionado</button>';
+        btnExtra = "<button class='ab ab-resolve' onclick="resolver('" + id + "','rojo','" + mat + "')">✓ Inspeccionado</button>";
       }
-      acciones = '<div class="acts">' +
-        '<button class="ab ab-v" onclick="asignar('' + r.id + '','verde','' + r.matricula + '')">✓ Verde</button>' +
-        '<button class="ab ab-n" onclick="asignar('' + r.id + '','naranja','' + r.matricula + '')">⏳ Naranja</button>' +
-        '<button class="ab ab-r" onclick="abrirModalRojo('' + r.id + '','' + r.matricula + '')">🔴 Rojo…</button>' +
+      acciones = "<div class='acts'>" +
+        "<button class='ab ab-v' onclick="asignar('" + id + "','verde','" + mat + "')">✓ Verde</button>" +
+        "<button class='ab ab-n' onclick="asignar('" + id + "','naranja','" + mat + "')">⏳ Naranja</button>" +
+        "<button class='ab ab-r' onclick="abrirModalRojo('" + id + "','" + mat + "')">🔴 Rojo…</button>" +
         btnExtra +
-        '<span class="snd" id="snd-' + r.id + '">aplicando…</span>' +
-        '</div>';
+        "<span class='snd' id='snd-" + id + "'>aplicando…</span>" +
+        "</div>";
     } else if (conAcciones && r.archivado) {
-      acciones = '<span style="font-family:var(--narrow);font-size:11px;color:var(--muted)">Archivado</span>';
+      acciones = "<span style='font-family:var(--narrow);font-size:11px;color:var(--muted)'>Archivado</span>";
     }
 
-    return '<tr class="' + archivada + '" id="row-' + r.id + '">' +
-      '<td class="td-mat">' + r.matricula + nuevoBadge + '</td>' +
-      '<td class="td-tel">' + r.telefono + '</td>' +
-      '<td class="td-hora">' + hora + '</td>' +
-      '<td><span class="badge ' + cls + '">' + lbl + '</span>' + timerTag + viendo + '</td>' +
-      (conAcciones ? '<td>' + acciones + '</td>' : '') +
-      '</tr>';
+    return "<tr class='" + archivada + "' id='row-" + id + "'>" +
+      "<td class='td-mat'>" + mat + nuevoBadge + "</td>" +
+      "<td class='td-tel'>" + tel + "</td>" +
+      "<td class='td-hora'>" + hora + "</td>" +
+      "<td><span class='badge " + cls + "'>" + lbl + "</span>" + timerTag + viendo + "</td>" +
+      (conAcciones ? "<td>" + acciones + "</td>" : "") +
+      "</tr>";
   });
 
   tb.innerHTML = filas.join('');
