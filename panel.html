@@ -286,8 +286,8 @@ function renderHoy() {
   document.getElementById('s-tot').textContent = rows.length;
   document.getElementById('s-pen').textContent = rows.filter(function(r){ return !r.circuito && !r.archivado; }).length;
   document.getElementById('s-ver').textContent = rows.filter(function(r){ return r.circuito==='verde'; }).length;
-  document.getElementById('s-nar').textContent = rows.filter(function(r){ return r.circuito==='naranja' && !r.archivado; }).length;
-  document.getElementById('s-roj').textContent = rows.filter(function(r){ return r.circuito && r.circuito.indexOf('rojo')===0 && !r.archivado; }).length;
+  document.getElementById('s-nar').textContent = rows.filter(function(r){ return r.circuito==='naranja' || (r.archivado && r.circuito_previo==='naranja'); }).length;
+  document.getElementById('s-roj').textContent = rows.filter(function(r){ return (r.circuito && r.circuito.indexOf('rojo')===0) || (r.archivado && r.circuito_previo && r.circuito_previo.indexOf('rojo')===0); }).length;
   document.getElementById('cnt').textContent   = list.length;
   renderTabla(list, true);
 }
@@ -303,6 +303,8 @@ function renderTabla(list, conAcc) {
   list.forEach(function(r) {
     var hora = new Date(r.hora_entrada).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
     var bi   = badgeInfo(r.circuito);
+    var biPrev = r.circuito_previo ? badgeInfo(r.circuito_previo) : null;
+    var prevTag = biPrev ? '<span class="badge ' + biPrev.cls + '" style="opacity:.45;font-size:10px;padding:2px 7px;margin-left:4px" title="Circuito anterior">' + biPrev.lbl + '</span>' : '';
     var arch = r.archivado ? 'archivada' : '';
 
     var timer = '';
@@ -329,6 +331,7 @@ function renderTabla(list, conAcc) {
         + '<button class="ab ab-n" onclick="asignar(\'' + r.id + '\',\'naranja\',\'' + r.matricula + '\')">⏳ Naranja</button>'
         + '<button class="ab ab-r" onclick="abrirRojo(\'' + r.id + '\',\'' + r.matricula + '\')">🔴 Rojo…</button>'
         + extra
+        + '<button class="ab ab-call" onclick="llamarMostrador(\'' + r.id + '\',\'' + r.matricula + '\')">📢 Mostrador</button>'
         + '<span class="snd" id="snd-' + r.id + '">aplicando…</span>'
         + '</div>';
     } else if (conAcc && r.archivado) {
@@ -339,7 +342,7 @@ function renderTabla(list, conAcc) {
       + '<td class="td-mat">' + r.matricula + nuevo + '</td>'
       + '<td class="td-tel">' + r.telefono + '</td>'
       + '<td class="td-hora">' + hora + '</td>'
-      + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + timer + viendo + '</td>'
+      + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + timer + viendo + '</td>'
       + (conAcc ? '<td>' + acc + '</td>' : '')
       + '</tr>';
   });
@@ -390,7 +393,10 @@ function asignar(id, circuito, mat) {
   var snd = document.getElementById('snd-' + id);
   if (snd) { snd.textContent = 'aplicando…'; snd.classList.add('show'); }
   var archivado = circuito === 'verde';
-  sb.from('despachos').update({circuito: circuito, archivado: archivado}).eq('id', id)
+  // Guardar circuito anterior antes de sobreescribir
+  var fila = rows.find(function(r){ return r.id === id; });
+  var previo = (fila && fila.circuito && fila.circuito !== circuito) ? fila.circuito : (fila ? fila.circuito_previo : null);
+  sb.from('despachos').update({circuito: circuito, archivado: archivado, circuito_previo: previo}).eq('id', id)
     .then(function(res) {
       if (res.error) { toast('Error al actualizar', 'err'); }
       else { toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : ''); }
