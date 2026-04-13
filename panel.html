@@ -317,6 +317,9 @@ function renderTabla(list, conAcc) {
       ? '<span class="viendo-tag"><div class="viendo-dot"></div>En pantalla</span>' : '';
 
     var nuevo = nuevosIds.has(r.id) ? '<span class="nuevo-badge">NUEVO</span>' : '';
+    var declTag = r.declaracion_aceptada
+      ? '<span title="Declaración art.139 CAU aceptada · ' + (r.hora_declaracion ? new Date(r.hora_declaracion).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '') + '" style="display:inline-flex;align-items:center;font-family:var(--narrow);font-size:9px;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.04em">✓ CAU</span>'
+      : '';
 
     var acc = '';
     if (conAcc && !r.archivado) {
@@ -339,7 +342,7 @@ function renderTabla(list, conAcc) {
     }
 
     html += '<tr class="' + arch + '" id="row-' + r.id + '">'
-      + '<td class="td-mat">' + r.matricula + nuevo + '</td>'
+      + '<td class="td-mat">' + r.matricula + nuevo + declTag + '</td>'
       + '<td class="td-tel">' + r.telefono + '</td>'
       + '<td class="td-hora">' + hora + '</td>'
       + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + timer + viendo + '</td>'

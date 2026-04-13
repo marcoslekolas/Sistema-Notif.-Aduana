@@ -140,7 +140,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <input type="tel" id="inp-tel" placeholder="612 000 000"
         maxlength="13" autocomplete="tel" inputmode="tel" class="tel-input">
     </div>
-    <div class="field-hint" id="hint-tel">Solo para identificarte, no recibirás llamadas</div>
+    <div class="field-hint" id="hint-tel">Campo opcional · Solo a efectos de comunicaciones sobre este despacho</div>
+  </div>
+
+  <div class="declaracion-box" id="declaracion-box">
+    <div class="declaracion-texto" id="decl-texto">El firmante declara que la mercancía amparada en el presente registro se encuentra físicamente presente en el recinto aduanero y queda a disposición de las autoridades aduaneras para su reconocimiento y control, de conformidad con el art. 139 del Reglamento (UE) n.º 952/2013 (Código Aduanero de la Unión).</div>
+    <label class="declaracion-check">
+      <input type="checkbox" id="chk-declaracion">
+      <span class="declaracion-check-label" id="decl-check-label">Acepto y declaro la disponibilidad de la mercancía</span>
+    </label>
   </div>
 
   <div class="form-error" id="form-err"></div>
@@ -227,6 +235,10 @@ const T = {
     naranja_desc:   'Tu despacho está pendiente de autorización por parte del técnico de aduanas. Permanece en el área de espera.',
     rojo_titulo:   'Inspección física requerida',
     rojo_desc:     'Tu vehículo ha sido seleccionado para inspección física. Dirígete al punto de control a la hora indicada.',
+    err_decl: 'Debe aceptar la declaración de disponibilidad de la mercancía para continuar.',
+    decl_texto: 'El firmante declara que la mercancía amparada en el presente registro se encuentra físicamente presente en el recinto aduanero y queda a disposición de las autoridades aduaneras para su reconocimiento y control, de conformidad con el art. 139 del Reglamento (UE) n.º 952/2013 (Código Aduanero de la Unión).',
+    decl_check: 'Acepto y declaro la disponibilidad de la mercancía',
+    hint_tel_new: 'Campo opcional · Solo a efectos de comunicaciones sobre este despacho',
     naranja_rec: 'Actualización: tu trámite continúa pendiente de autorización del técnico de aduanas. Tiempo en espera: {min} min.',
     lbl_recover: 'Consultar estado por matrícula',
     recover_link: '¿Ya te registraste antes y cerraste la página?',
@@ -258,6 +270,10 @@ const T = {
     naranja_desc:   'Your clearance is pending authorisation by the customs officer. Please remain in the waiting area.',
     rojo_titulo:   'Physical inspection required',
     rojo_desc:     'Your vehicle has been selected for physical inspection. Please report to the inspection point at the indicated time.',
+    err_decl: 'You must accept the goods availability declaration to proceed.',
+    decl_texto: 'The undersigned declares that the goods covered by this registration are physically present in the customs premises and available to the customs authorities for examination and control, in accordance with Article 139 of Regulation (EU) No 952/2013 (Union Customs Code).',
+    decl_check: 'I accept and declare the availability of the goods',
+    hint_tel_new: 'Optional · For communications related to this customs clearance only',
     naranja_rec: 'Update: your clearance is still pending customs officer authorisation. Waiting time: {min} min.',
     lbl_recover: 'Check status by plate number',
     recover_link: 'Already registered but closed the page?',
@@ -289,6 +305,10 @@ const T = {
     naranja_desc:   'Votre dédouanement est en attente d\'autorisation par l\'agent des douanes. Veuillez rester dans la zone d\'attente.',
     rojo_titulo:   'Inspection physique requise',
     rojo_desc:     'Votre véhicule a été sélectionné pour une inspection physique. Présentez-vous au point de contrôle à l\'heure indiquée.',
+    err_decl: 'Vous devez accepter la déclaration de disponibilité des marchandises pour continuer.',
+    decl_texto: 'Le soussigné déclare que les marchandises visées par le présent enregistrement sont physiquement présentes dans l\'enceinte douanière et sont à la disposition des autorités douanières pour leur examen et contrôle, conformément à l\'article 139 du règlement (UE) n° 952/2013 (Code des douanes de l\'Union).',
+    decl_check: 'J\'accepte et déclare la disponibilité des marchandises',
+    hint_tel_new: 'Optionnel · Uniquement pour les communications liées à ce dédouanement',
     naranja_rec: 'Mise à jour : votre dédouanement est toujours en attente d\'autorisation. Temps d\'attente : {min} min.',
     lbl_recover: 'Consulter l\'état par immatriculation',
     recover_link: 'Déjà enregistré mais page fermée ?',
@@ -320,6 +340,10 @@ const T = {
     naranja_desc:   'O seu despacho aguarda autorização do técnico aduaneiro. Por favor, permaneça na área de espera.',
     rojo_titulo:   'Inspeção física necessária',
     rojo_desc:     'O seu veículo foi selecionado para inspeção física. Dirija-se ao ponto de controlo à hora indicada.',
+    err_decl: 'Deve aceitar a declaração de disponibilidade das mercadorias para continuar.',
+    decl_texto: 'O abaixo assinado declara que as mercadorias abrangidas por este registo estão fisicamente presentes no recinto aduaneiro e à disposição das autoridades aduaneiras para exame e controlo, nos termos do artigo 139.º do Regulamento (UE) n.º 952/2013 (Código Aduaneiro da União).',
+    decl_check: 'Aceito e declaro a disponibilidade das mercadorias',
+    hint_tel_new: 'Opcional · Apenas para comunicações relacionadas com este despacho',
     naranja_rec: 'Atualização: o seu despacho continua pendente de autorização. Tempo de espera: {min} min.',
     lbl_recover: 'Consultar estado por matrícula',
     recover_link: 'Já se registou mas fechou a página?',
@@ -351,6 +375,10 @@ const T = {
     naranja_desc:   'Vămuirea dvs. așteaptă autorizarea din partea ofițerului vamal. Vă rugăm să rămâneți în zona de așteptare.',
     rojo_titulo:   'Inspecție fizică necesară',
     rojo_desc:     'Vehiculul dvs. a fost selectat pentru inspecție fizică. Prezentați-vă la punctul de control la ora indicată.',
+    err_decl: 'Trebuie să acceptați declarația de disponibilitate a mărfurilor pentru a continua.',
+    decl_texto: 'Subsemnatul declară că mărfurile acoperite de această înregistrare sunt prezente fizic în incinta vamală și sunt la dispoziția autorităților vamale pentru examinare și control, în conformitate cu articolul 139 din Regulamentul (UE) nr. 952/2013 (Codul vamal al Uniunii).',
+    decl_check: 'Accept și declar disponibilitatea mărfurilor',
+    hint_tel_new: 'Opțional · Doar pentru comunicări legate de această vămuire',
     naranja_rec: 'Actualizare: vămuirea este în continuare în așteptare. Timp de așteptare: {min} min.',
     lbl_recover: 'Verificați starea după numărul de înmatriculare',
     recover_link: 'V-ați înregistrat deja dar ați închis pagina?',
@@ -382,6 +410,10 @@ const T = {
     naranja_desc:   'Twoja odprawa oczekuje na autoryzację przez urzędnika celnego. Proszę pozostać w strefie oczekiwania.',
     rojo_titulo:   'Wymagana kontrola fizyczna',
     rojo_desc:     'Twój pojazd został wybrany do kontroli fizycznej. Proszę zgłosić się do punktu kontrolnego o wskazanej godzinie.',
+    err_decl: 'Należy zaakceptować deklarację dostępności towarów, aby kontynuować.',
+    decl_texto: 'Podpisany oświadcza, że towary objęte niniejszą rejestracją są fizycznie obecne na terenie urzędu celnego i pozostają do dyspozycji organów celnych w celu kontroli, zgodnie z art. 139 rozporządzenia (UE) nr 952/2013 (Unijny Kodeks Celny).',
+    decl_check: 'Akceptuję i oświadczam dostępność towarów',
+    hint_tel_new: 'Opcjonalne · Wyłącznie do komunikacji związanej z tą odprawą',
     naranja_rec: 'Aktualizacja: odprawa nadal oczekuje na autoryzację. Czas oczekiwania: {min} min.',
     lbl_recover: 'Sprawdź status po numerze rejestracyjnym',
     recover_link: 'Już się zarejestrowałeś, ale zamknąłeś stronę?',
@@ -413,6 +445,10 @@ const T = {
     naranja_desc:   'Ihre Abfertigung wartet auf die Genehmigung durch den Zollbeamten. Bitte bleiben Sie im Wartebereich.',
     rojo_titulo:   'Physische Kontrolle erforderlich',
     rojo_desc:     'Ihr Fahrzeug wurde für eine physische Kontrolle ausgewählt. Bitte melden Sie sich zur angegebenen Zeit am Kontrollpunkt.',
+    err_decl: 'Sie müssen die Verfügbarkeitserklärung der Waren akzeptieren, um fortzufahren.',
+    decl_texto: 'Der Unterzeichner erklärt, dass die in dieser Anmeldung erfassten Waren physisch in der Zollstelle vorhanden und den Zollbehörden zur Prüfung und Kontrolle gemäß Artikel 139 der Verordnung (EU) Nr. 952/2013 (Unionszollkodex) zur Verfügung stehen.',
+    decl_check: 'Ich akzeptiere und erkläre die Verfügbarkeit der Waren',
+    hint_tel_new: 'Optional · Nur für Kommunikation im Zusammenhang mit dieser Zollabfertigung',
     naranja_rec: 'Aktualisierung: Abfertigung wartet weiterhin auf Genehmigung. Wartezeit: {min} Min.',
     lbl_recover: 'Status per Kennzeichen abfragen',
     recover_link: 'Bereits registriert, aber Seite geschlossen?',
@@ -444,6 +480,10 @@ const T = {
     naranja_desc:   'Jūsų muitinis įforminimas laukia muitinės pareigūno patvirtinimo. Prašome likti laukimo zonoje.',
     rojo_titulo:   'Būtina fizinė patikra',
     rojo_desc:     'Jūsų transporto priemonė pasirinkta fizinei patikrai. Nurodytu laiku atvykite į kontrolės punktą.',
+    err_decl: 'Norėdami tęsti, turite priimti prekių prieinamumo deklaraciją.',
+    decl_texto: 'Pasirašantysis pareiškia, kad šioje registracijoje nurodytos prekės fiziškai yra muitinės teritorijoje ir yra prieinamos muitinės institucijoms patikrinimui pagal Reglamento (ES) Nr. 952/2013 (Sąjungos muitinės kodeksas) 139 straipsnį.',
+    decl_check: 'Sutinku ir pareiškiu prekių prieinamumą',
+    hint_tel_new: 'Neprivaloma · Tik ryšiams, susijusiems su šiuo muitiniu įforminimu',
     naranja_rec: 'Atnaujinimas: įforminimas vis dar laukia patvirtinimo. Laukimo laikas: {min} min.',
     lbl_recover: 'Tikrinti būseną pagal numerį',
     recover_link: 'Jau užsiregistravote, bet uždarėte puslapį?',
@@ -475,6 +515,10 @@ const T = {
     naranja_desc:   'Ваше оформление ожидает авторизации таможенного инспектора. Пожалуйста, оставайтесь в зоне ожидания.',
     rojo_titulo:   'Необходим физический досмотр',
     rojo_desc:     'Ваше транспортное средство выбрано для физического досмотра. Пожалуйста, явитесь на контрольный пункт в указанное время.',
+    err_decl: 'Необходимо принять декларацию о наличии товара для продолжения.',
+    decl_texto: 'Нижеподписавшийся заявляет, что товары, охваченные данной регистрацией, физически присутствуют на таможенной территории и находятся в распоряжении таможенных органов для проверки и контроля в соответствии со статьёй 139 Регламента (ЕС) № 952/2013 (Таможенный кодекс Союза).',
+    decl_check: 'Принимаю и заявляю о наличии товара',
+    hint_tel_new: 'Необязательно · Только для связи по данному таможенному оформлению',
     naranja_rec: 'Обновление: оформление по-прежнему ожидает авторизации. Время ожидания: {min} мин.',
     lbl_recover: 'Проверить статус по номеру',
     recover_link: 'Уже зарегистрировались, но закрыли страницу?',
@@ -506,6 +550,10 @@ const T = {
     naranja_desc:   'Il tuo sdoganamento è in attesa di autorizzazione da parte del funzionario doganale. Rimani nell\'area di attesa.',
     rojo_titulo:   'Ispezione fisica richiesta',
     rojo_desc:     'Il tuo veicolo è stato selezionato per un\'ispezione fisica. Presentati al punto di controllo all\'orario indicato.',
+    err_decl: 'È necessario accettare la dichiarazione di disponibilità delle merci per procedere.',
+    decl_texto: 'Il sottoscritto dichiara che le merci oggetto della presente registrazione sono fisicamente presenti nel recinto doganale e a disposizione delle autorità doganali per l\'esame e il controllo, ai sensi dell\'articolo 139 del regolamento (UE) n. 952/2013 (Codice doganale dell\'Unione).',
+    decl_check: 'Accetto e dichiaro la disponibilità delle merci',
+    hint_tel_new: 'Facoltativo · Solo per comunicazioni relative a questo sdoganamento',
     naranja_rec: 'Aggiornamento: sdoganamento ancora in attesa di autorizzazione. Tempo di attesa: {min} min.',
     lbl_recover: 'Controlla stato per targa',
     recover_link: 'Già registrato ma hai chiuso la pagina?',
@@ -542,6 +590,9 @@ function setLang(lang) {
   if (t.lbl_recover)   document.getElementById('lbl-recover').textContent       = t.lbl_recover;
   if (t.recover_link)  document.getElementById('btn-recover-link').textContent  = t.recover_link;
   if (t.recover_btn)   document.getElementById('btn-rec').textContent           = t.recover_btn;
+  if (t.decl_texto)    document.getElementById('decl-texto').textContent        = t.decl_texto;
+  if (t.decl_check)    document.getElementById('decl-check-label').textContent  = t.decl_check;
+  if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
 
   // Si está en pantalla de espera, actualizar textos
   const card = document.getElementById('estado-card');
@@ -567,6 +618,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (t.lbl_recover)   document.getElementById('lbl-recover').textContent       = t.lbl_recover;
   if (t.recover_link)  document.getElementById('btn-recover-link').textContent  = t.recover_link;
   if (t.recover_btn)   document.getElementById('btn-rec').textContent           = t.recover_btn;
+  if (t.decl_texto)    document.getElementById('decl-texto').textContent        = t.decl_texto;
+  if (t.decl_check)    document.getElementById('decl-check-label').textContent  = t.decl_check;
+  if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
   document.getElementById('estado-titulo').textContent = t.esperando_titulo;
   document.getElementById('estado-desc').textContent   = t.esperando_desc;
 });
@@ -589,7 +643,11 @@ async function registrar() {
   errEl.style.display = 'none';
 
   if (mat.length < 4) { mostrarError(t.err_mat); return; }
-  if (tel.replace(/[^0-9]/g, '').length < 7) { mostrarError(t.err_tel); return; }
+  if (tel.length > 0 && tel.replace(/[^0-9]/g, '').length < 7) { mostrarError(t.err_tel); return; }
+  if (!document.getElementById('chk-declaracion').checked) {
+    mostrarError(t.err_decl || 'Debe aceptar la declaración de disponibilidad de la mercancía para continuar.');
+    return;
+  }
 
   const telefono = T[idiomaActual].prefix + tel;
 
@@ -604,7 +662,7 @@ async function registrar() {
         'Authorization': `Bearer ${ANON_KEY}`,
         'Prefer': 'return=representation'
       },
-      body: JSON.stringify({ matricula: mat, telefono, hora_entrada: new Date().toISOString() })
+      body: JSON.stringify({ matricula: mat, telefono, declaracion_aceptada: true, hora_declaracion: new Date().toISOString(), hora_entrada: new Date().toISOString() })
     });
 
     if (!res.ok) throw new Error();
