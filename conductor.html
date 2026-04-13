@@ -95,6 +95,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .conexion-pill{display:flex;align-items:center;gap:5px;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#22c55e}
 .conexion-dot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:pulse 2s ease-in-out infinite}
 .estado-num-label{font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8a8480}
+.declaracion-box{margin-top:14px;padding:14px 16px;background:#f8f7f4;border:1px solid #dedad2;border-left:3px solid #1a1816;border-radius:0 6px 6px 0}
+.declaracion-texto{font-family:'Barlow',sans-serif;font-size:12px;font-weight:400;color:#444;line-height:1.6;margin-bottom:12px}
+.declaracion-check{display:flex;align-items:center;gap:12px;cursor:pointer;background:#fff;border:1.5px solid #1a1816;border-radius:8px;padding:11px 14px;transition:background .15s}
+.declaracion-check:hover{background:#f4f2ee}
+.declaracion-check input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;accent-color:#1a1816;cursor:pointer}
+.declaracion-check-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#1a1816;line-height:1.3;letter-spacing:.02em}
+.recibo-btn{width:100%;margin-top:10px;padding:13px;background:#1a1816;color:#fff;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.recibo-btn:hover{background:#333}
+.hash-tag{font-family:'Courier New',monospace;font-size:9px;color:#8a8480;word-break:break-all;padding:6px 10px;background:#f4f2ee;border-radius:4px;border:1px solid #dedad2}
 </style>
 </head>
 <body>
@@ -197,10 +206,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 
   <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
-  <button class="recibo-btn" id="btn-recibo" onclick="descargarRecibo()" style="display:none">
+  <button class="recibo-btn" id="btn-recibo" onclick="descargarRecibo()" style="display:none;margin-top:12px">
     <span>⬇</span><span id="btn-recibo-txt">Descargar justificante de declaración</span>
   </button>
-  <div class="hash-tag" id="hash-display" style="display:none"></div>
+  <div class="hash-tag" id="hash-display" style="display:none;margin-top:8px"></div>
 </div>
 
 <script>
@@ -704,13 +713,13 @@ async function registrar() {
     document.getElementById('estado-titulo').textContent   = t.esperando_titulo;
     document.getElementById('estado-desc').textContent     = t.esperando_desc;
 
-    // Mostrar botón de recibo y hash
-    if (hash) {
-      document.getElementById('hash-display').textContent = 'SHA-256: ' + hash;
-      document.getElementById('hash-display').style.display = 'block';
-    }
+    // Mostrar botón de recibo SIEMPRE
     document.getElementById('btn-recibo').style.display = 'flex';
     if (t.btn_recibo) document.getElementById('btn-recibo-txt').textContent = t.btn_recibo;
+    // Mostrar hash si está disponible
+    const hashEl = document.getElementById('hash-display');
+    hashEl.textContent = hash ? 'SHA-256: ' + hash : '';
+    hashEl.style.display = hash ? 'block' : 'none';
 
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
@@ -853,6 +862,18 @@ async function recuperar() {
     document.getElementById('estado-desc').textContent   = tx.esperando_desc;
   }
 
+  // Mostrar botón de recibo si tenía declaración
+  if (despacho.declaracion_aceptada) {
+    document.getElementById('btn-recibo').style.display = 'flex';
+    const t2 = T[idiomaActual];
+    if (t2.btn_recibo) document.getElementById('btn-recibo-txt').textContent = t2.btn_recibo;
+    if (despacho.hash_registro) {
+      const hEl = document.getElementById('hash-display');
+      hEl.textContent = 'SHA-256: ' + despacho.hash_registro;
+      hEl.style.display = 'block';
+    }
+  }
+
   // Suscribirse a cambios futuros
   suscribirEstado(despachoId);
   iniciarRecordatorioNaranja();
@@ -929,6 +950,15 @@ function descargarRecibo() {
   .footer{margin-top:32px;padding-top:16px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center}
   .sello{display:inline-block;border:2px solid #1a1816;padding:8px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:16px}
   @media print{body{margin:20px}}
+.declaracion-box{margin-top:14px;padding:14px 16px;background:#f8f7f4;border:1px solid #dedad2;border-left:3px solid #1a1816;border-radius:0 6px 6px 0}
+.declaracion-texto{font-family:'Barlow',sans-serif;font-size:12px;font-weight:400;color:#444;line-height:1.6;margin-bottom:12px}
+.declaracion-check{display:flex;align-items:center;gap:12px;cursor:pointer;background:#fff;border:1.5px solid #1a1816;border-radius:8px;padding:11px 14px;transition:background .15s}
+.declaracion-check:hover{background:#f4f2ee}
+.declaracion-check input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;accent-color:#1a1816;cursor:pointer}
+.declaracion-check-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#1a1816;line-height:1.3;letter-spacing:.02em}
+.recibo-btn{width:100%;margin-top:10px;padding:13px;background:#1a1816;color:#fff;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.recibo-btn:hover{background:#333}
+.hash-tag{font-family:'Courier New',monospace;font-size:9px;color:#8a8480;word-break:break-all;padding:6px 10px;background:#f4f2ee;border-radius:4px;border:1px solid #dedad2}
 </style>
 </head><body>
 <div class="header">
@@ -964,10 +994,14 @@ function descargarRecibo() {
 </div>
 </body></html>`;
 
-  const ventana = window.open('', '_blank');
-  ventana.document.write(html);
-  ventana.document.close();
-  setTimeout(() => ventana.print(), 800);
+  // Crear blob y descargar como HTML (compatible con móvil)
+  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'declaracion-aduana-' + mat + '-' + new Date().toISOString().split('T')[0] + '.html';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
