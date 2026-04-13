@@ -197,6 +197,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 
   <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
+  <button class="recibo-btn" id="btn-recibo" onclick="descargarRecibo()" style="display:none">
+    <span>⬇</span><span id="btn-recibo-txt">Descargar justificante de declaración</span>
+  </button>
+  <div class="hash-tag" id="hash-display" style="display:none"></div>
 </div>
 
 <script>
@@ -245,6 +249,8 @@ const T = {
     recover_btn: 'Consultar',
     recover_err: 'Matrícula no encontrada en los registros de hoy.',
     prefix: '+34',
+    btn_recibo: 'Descargar justificante de declaración',
+    decl_titulo_lang: 'Declaración (Español)',
     aviso_mostrador: 'Por favor, acuda al mostrador de despachos',
   },
   en: {
@@ -280,6 +286,8 @@ const T = {
     recover_btn: 'Check',
     recover_err: 'Plate number not found in today\'s records.',
     prefix: '+44',
+    btn_recibo: 'Download declaration receipt',
+    decl_titulo_lang: 'Declaration (English)',
     aviso_mostrador: 'Please proceed to the customs desk',
   },
   fr: {
@@ -315,6 +323,8 @@ const T = {
     recover_btn: 'Consulter',
     recover_err: 'Immatriculation introuvable dans les enregistrements d\'aujourd\'hui.',
     prefix: '+33',
+    btn_recibo: 'Télécharger le justificatif de déclaration',
+    decl_titulo_lang: 'Déclaration (Français)',
     aviso_mostrador: 'Veuillez vous présenter au guichet des douanes',
   },
   pt: {
@@ -350,6 +360,8 @@ const T = {
     recover_btn: 'Consultar',
     recover_err: 'Matrícula não encontrada nos registos de hoje.',
     prefix: '+351',
+    btn_recibo: 'Descarregar justificativo de declaração',
+    decl_titulo_lang: 'Declaração (Português)',
     aviso_mostrador: 'Por favor, dirija-se ao balcão de despachos',
   },
   ro: {
@@ -385,6 +397,8 @@ const T = {
     recover_btn: 'Verificați',
     recover_err: 'Numărul de înmatriculare nu a fost găsit în înregistrările de astăzi.',
     prefix: '+40',
+    btn_recibo: 'Descărcați dovada declarației',
+    decl_titulo_lang: 'Declarație (Română)',
     aviso_mostrador: 'Vă rugăm să vă prezentați la ghișeul vamal',
   },
   pl: {
@@ -420,6 +434,8 @@ const T = {
     recover_btn: 'Sprawdź',
     recover_err: 'Numer rejestracyjny nie został znaleziony w dzisiejszych rekordach.',
     prefix: '+48',
+    btn_recibo: 'Pobierz potwierdzenie deklaracji',
+    decl_titulo_lang: 'Deklaracja (Polski)',
     aviso_mostrador: 'Prosimy zgłosić się do okienka celnego',
   },
   de: {
@@ -455,6 +471,8 @@ const T = {
     recover_btn: 'Abfragen',
     recover_err: 'Kennzeichen in den heutigen Einträgen nicht gefunden.',
     prefix: '+49',
+    btn_recibo: 'Erklärungsbeleg herunterladen',
+    decl_titulo_lang: 'Erklärung (Deutsch)',
     aviso_mostrador: 'Bitte begeben Sie sich zum Zollschalter',
   },
   lt: {
@@ -490,6 +508,8 @@ const T = {
     recover_btn: 'Tikrinti',
     recover_err: 'Numeris nerastas šios dienos įrašuose.',
     prefix: '+370',
+    btn_recibo: 'Atsisiųsti deklaracijos kvitą',
+    decl_titulo_lang: 'Deklaracija (Lietuvių)',
     aviso_mostrador: 'Prašome atvykti prie muitinės langelio',
   },
   ru: {
@@ -525,6 +545,8 @@ const T = {
     recover_btn: 'Проверить',
     recover_err: 'Номер не найден в сегодняшних записях.',
     prefix: '+7',
+    btn_recibo: 'Скачать квитанцию декларации',
+    decl_titulo_lang: 'Декларация (Русский)',
     aviso_mostrador: 'Пожалуйста, подойдите к стойке таможни',
   },
   it: {
@@ -560,6 +582,8 @@ const T = {
     recover_btn: 'Controlla',
     recover_err: 'Targa non trovata nei registri di oggi.',
     prefix: '+39',
+    btn_recibo: 'Scarica la ricevuta della dichiarazione',
+    decl_titulo_lang: 'Dichiarazione (Italiano)',
     aviso_mostrador: 'Si prega di recarsi allo sportello doganale',
   },
 };
@@ -593,6 +617,7 @@ function setLang(lang) {
   if (t.decl_texto)    document.getElementById('decl-texto').textContent        = t.decl_texto;
   if (t.decl_check)    document.getElementById('decl-check-label').textContent  = t.decl_check;
   if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
+  if (t.btn_recibo)    document.getElementById('btn-recibo-txt').textContent     = t.btn_recibo;
 
   // Si está en pantalla de espera, actualizar textos
   const card = document.getElementById('estado-card');
@@ -621,6 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (t.decl_texto)    document.getElementById('decl-texto').textContent        = t.decl_texto;
   if (t.decl_check)    document.getElementById('decl-check-label').textContent  = t.decl_check;
   if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
+  if (t.btn_recibo)    document.getElementById('btn-recibo-txt').textContent     = t.btn_recibo;
   document.getElementById('estado-titulo').textContent = t.esperando_titulo;
   document.getElementById('estado-desc').textContent   = t.esperando_desc;
 });
@@ -677,6 +703,14 @@ async function registrar() {
     document.getElementById('estado-mat-top').textContent  = mat;
     document.getElementById('estado-titulo').textContent   = t.esperando_titulo;
     document.getElementById('estado-desc').textContent     = t.esperando_desc;
+
+    // Mostrar botón de recibo y hash
+    if (hash) {
+      document.getElementById('hash-display').textContent = 'SHA-256: ' + hash;
+      document.getElementById('hash-display').style.display = 'block';
+    }
+    document.getElementById('btn-recibo').style.display = 'flex';
+    if (t.btn_recibo) document.getElementById('btn-recibo-txt').textContent = t.btn_recibo;
 
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
@@ -841,6 +875,99 @@ function iniciarRecordatorioNaranja() {
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     }
   }, 60000);
+}
+
+// ── OBTENER IP DEL CONDUCTOR ──
+async function obtenerIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    return data.ip || '';
+  } catch { return ''; }
+}
+
+// ── HASH SHA-256 DEL REGISTRO ──
+async function calcularHash(datos) {
+  try {
+    const texto = JSON.stringify(datos);
+    const buffer = new TextEncoder().encode(texto);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch { return ''; }
+}
+
+// ── GENERAR PDF JUSTIFICANTE ──
+function descargarRecibo() {
+  const t   = T[idiomaActual];
+  const mat = document.getElementById('estado-mat-top').textContent;
+  const hash = document.getElementById('hash-display').textContent.replace('SHA-256: ','');
+  const ahora = new Date();
+  const fechaES = ahora.toLocaleDateString('es-ES', {day:'2-digit',month:'2-digit',year:'numeric'});
+  const horaES  = ahora.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  const esEspanol = idiomaActual === 'es';
+  const declES = T['es'].decl_texto || '';
+  const declLang = (!esEspanol && t.decl_texto) ? t.decl_texto : '';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#1a1816}
+  .header{border-bottom:3px solid #1a1816;padding-bottom:16px;margin-bottom:24px}
+  .titulo{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .subtitulo{font-size:12px;color:#666;margin-top:4px}
+  .datos{background:#f8f7f4;border:1px solid #dedad2;border-radius:6px;padding:16px;margin:20px 0}
+  .fila{display:flex;gap:12px;margin-bottom:8px;font-size:13px}
+  .fila-label{font-weight:700;min-width:180px;color:#555;text-transform:uppercase;font-size:11px;letter-spacing:.06em;padding-top:1px}
+  .fila-valor{font-size:14px;font-weight:600}
+  .decl-box{border-left:4px solid #1a1816;padding:14px 16px;margin:20px 0;background:#fff;border:1px solid #dedad2;border-left:4px solid #1a1816}
+  .decl-titulo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#666;margin-bottom:8px}
+  .decl-texto{font-size:12px;line-height:1.7;color:#333}
+  .decl-lang{margin-top:12px;padding-top:12px;border-top:1px solid #eee}
+  .hash-box{background:#f0f0f0;border:1px solid #ddd;border-radius:4px;padding:10px;margin-top:20px;font-family:monospace;font-size:10px;word-break:break-all;color:#555}
+  .hash-label{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:4px}
+  .footer{margin-top:32px;padding-top:16px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center}
+  .sello{display:inline-block;border:2px solid #1a1816;padding:8px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:16px}
+  @media print{body{margin:20px}}
+</style>
+</head><body>
+<div class="header">
+  <div class="titulo">Justificante de Declaración Aduanera</div>
+  <div class="subtitulo">Declaración de disponibilidad de mercancía · Art. 139 Reglamento (UE) n.º 952/2013</div>
+</div>
+
+<div class="datos">
+  <div class="fila"><span class="fila-label">Matrícula vehículo</span><span class="fila-valor">${mat}</span></div>
+  <div class="fila"><span class="fila-label">Fecha de declaración</span><span class="fila-valor">${fechaES}</span></div>
+  <div class="fila"><span class="fila-label">Hora de declaración</span><span class="fila-valor">${horaES} (hora local)</span></div>
+  <div class="fila"><span class="fila-label">Referencia de registro</span><span class="fila-valor">${despachoId}</span></div>
+  <div class="fila"><span class="fila-label">Estado</span><span class="fila-valor">✓ DECLARACIÓN ACEPTADA</span></div>
+</div>
+
+<div class="decl-box">
+  <div class="decl-titulo">Declaración (Español)</div>
+  <div class="decl-texto">${declES}</div>
+  ${declLang ? `<div class="decl-lang"><div class="decl-titulo">${t.decl_titulo_lang || 'Declaration'}</div><div class="decl-texto">${declLang}</div></div>` : ''}
+</div>
+
+<div class="hash-label">Huella digital del registro (SHA-256)</div>
+<div class="hash-box">${hash || 'No disponible'}</div>
+
+<div style="text-align:center;margin-top:24px">
+  <div class="sello">Declaración registrada electrónicamente</div>
+</div>
+
+<div class="footer">
+  Este documento acredita la declaración electrónica de disponibilidad de mercancía realizada por el conductor del vehículo indicado.<br>
+  El hash SHA-256 permite verificar la integridad del registro original almacenado en la base de datos del sistema.<br>
+  Generado por Sistema de Notificación de Despachos Aduaneros · ${fechaES} ${horaES}
+</div>
+</body></html>`;
+
+  const ventana = window.open('', '_blank');
+  ventana.document.write(html);
+  ventana.document.close();
+  setTimeout(() => ventana.print(), 800);
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
