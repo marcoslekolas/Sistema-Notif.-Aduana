@@ -806,32 +806,39 @@ function suscribirEstado(id) {
       }
     });
 
-  // POLLING DE RESPALDO cada 8 segundos
-  // Si Realtime falla (común en redes móviles), el polling garantiza la actualización
+  // POLLING DE RESPALDO cada 10 segundos
+  // Guarda el último estado conocido para solo actuar si hay cambio real
+  var _ultimoCircuito  = null;
+  var _ultimoMostrador = false;
+
   if (window._pollInterval) clearInterval(window._pollInterval);
   window._pollInterval = setInterval(function() {
     sb.from('despachos')
-      .select('circuito, mensaje_mostrador, archivado')
+      .select('circuito, mensaje_mostrador')
       .eq('id', id)
       .single()
       .then(function(res) {
-        if (res.data) {
-          // Actualizar aviso mostrador
-          if (res.data.mensaje_mostrador) {
+        if (!res.data) return;
+        var d = res.data;
+
+        // Solo actuar en aviso mostrador si cambió
+        if (d.mensaje_mostrador !== _ultimoMostrador) {
+          _ultimoMostrador = d.mensaje_mostrador;
+          if (d.mensaje_mostrador) {
             mostrarAvisoMostrador();
           } else {
             var av = document.getElementById('aviso-mostrador');
             if (av) av.style.display = 'none';
           }
-          // Actualizar circuito si hay cambio
-          var card = document.getElementById('estado-card');
-          var yaResuelto = card && !card.classList.contains('waiting');
-          if (res.data.circuito && !yaResuelto) {
-            actualizarPantalla(res.data);
-          }
+        }
+
+        // Solo actuar en circuito si cambió
+        if (d.circuito !== _ultimoCircuito) {
+          _ultimoCircuito = d.circuito;
+          actualizarPantalla(d);
         }
       });
-  }, 8000);
+  }, 10000);
 }
 
 // ── ACTUALIZAR PANTALLA ──
