@@ -777,51 +777,35 @@ async function registrar() {
 
 // ── REALTIME ──
 function suscribirEstado(id) {
-  suscripcion = sb.channel('conductor-estado-' + id)
-    .on('postgres_changes', {
-      event: 'UPDATE', schema: 'public', table: 'despachos'
-    }, function(payload) {
-      const d = payload.new;
-      if (d.id !== id) return;
-      if (d.mensaje_mostrador) {
-        mostrarAvisoMostrador();
-      } else {
-        document.getElementById('aviso-mostrador').style.display = 'none';
-      }
-      actualizarPantalla(d);
-    })
-    .subscribe(function(status) {
-      const dot  = document.querySelector('.conexion-dot');
-      const pill = document.querySelector('.conexion-pill');
-      const txt  = document.querySelector('#txt-endirecto');
-      if (status === 'SUBSCRIBED') {
-        if (dot)  dot.style.background  = '#22c55e';
-        if (pill) pill.style.color      = '#22c55e';
-        if (txt)  txt.textContent       = T[idiomaActual].endirecto || 'En directo';
-      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        if (dot)  dot.style.background  = '#f87171';
-        if (pill) pill.style.color      = '#f87171';
-        if (txt)  txt.textContent       = 'Reconectando…';
-        setTimeout(function() { suscribirEstado(id); }, 3000);
-      }
-    });
-
-  // POLLING DE RESPALDO cada 10 segundos
-  // Guarda el último estado conocido para solo actuar si hay cambio real
+  // Polling cada 5 segundos - más fiable que Realtime en redes móviles
   var _ultimoCircuito  = null;
   var _ultimoMostrador = false;
+  var _intentos = 0;
 
-  if (window._pollInterval) clearInterval(window._pollInterval);
-  window._pollInterval = setInterval(function() {
+  function consultar() {
     sb.from('despachos')
       .select('circuito, mensaje_mostrador')
       .eq('id', id)
       .single()
       .then(function(res) {
-        if (!res.data) return;
+        _intentos++;
+        var dot  = document.querySelector('.conexion-dot');
+        var txt  = document.querySelector('#txt-endirecto');
+
+        if (res.error || !res.data) {
+          // Error de red - mostrar indicador rojo
+          if (dot) dot.style.background = '#f87171';
+          if (txt) txt.textContent = 'Reconectando…';
+          return;
+        }
+
+        // Conexión OK
+        if (dot) dot.style.background = '#22c55e';
+        if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
+
         var d = res.data;
 
-        // Solo actuar en aviso mostrador si cambió
+        // Solo actuar si hay cambio real en mostrador
         if (d.mensaje_mostrador !== _ultimoMostrador) {
           _ultimoMostrador = d.mensaje_mostrador;
           if (d.mensaje_mostrador) {
@@ -832,13 +816,26 @@ function suscribirEstado(id) {
           }
         }
 
-        // Solo actuar en circuito si cambió
+        // Solo actuar si hay cambio real en circuito
         if (d.circuito !== _ultimoCircuito) {
           _ultimoCircuito = d.circuito;
-          actualizarPantalla(d);
+          if (d.circuito) {
+            actualizarPantalla(d);
+          }
         }
+      })
+      .catch(function() {
+        var dot = document.querySelector('.conexion-dot');
+        if (dot) dot.style.background = '#f87171';
       });
-  }, 10000);
+  }
+
+  // Primera consulta inmediata
+  consultar();
+
+  // Polling cada 5 segundos
+  if (window._pollInterval) clearInterval(window._pollInterval);
+  window._pollInterval = setInterval(consultar, 5000);
 }
 
 // ── ACTUALIZAR PANTALLA ──
