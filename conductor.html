@@ -1017,10 +1017,17 @@ function activarSonidoConductor() {
 
 function sonar() {
   var snd = document.getElementById('snd-conductor');
-  if (snd && sonidoListo) {
-    snd.currentTime = 0;
-    snd.play().catch(function() {});
-  }
+  if (!snd || !sonidoListo) return;
+  // Clonar el elemento para poder reproducirlo múltiples veces en iOS
+  var clon = snd.cloneNode(true);
+  clon.style.display = 'none';
+  document.body.appendChild(clon);
+  clon.play().catch(function() {});
+  // Limpiar el clon cuando termine
+  clon.addEventListener('ended', function() {
+    clon.remove();
+  });
+  setTimeout(function() { if (clon.parentNode) clon.remove(); }, 3000);
 }
 
 // ── RECORDATORIO NARANJA CADA 30 MIN ──
