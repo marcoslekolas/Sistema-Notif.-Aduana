@@ -888,6 +888,8 @@ function actualizarPantalla(despacho) {
   }
 
   // Vibración en Android
+  const mat = document.getElementById('estado-mat-top').textContent;
+  sonar(mat, c);
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   // Flash visual en iOS (donde vibrate no existe)
   flashPantalla();
@@ -1007,6 +1009,10 @@ function activarSonidoConductor() {
     snd.pause();
     snd.currentTime = 0;
     sonidoListo = true;
+    // Pedir permiso de notificaciones del sistema
+    if (Notification && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
     var btn = document.getElementById('btn-activar-sonido');
     if (btn) {
       btn.style.borderColor = '#22c55e';
@@ -1022,19 +1028,46 @@ function activarSonidoConductor() {
   }).catch(function() {});
 }
 
-function sonar() {
+function sonar(matricula, circuito) {
+  // 1. Notificación del sistema (funciona en iOS instalado como PWA, suena aunque esté en silencio)
+  if (Notification && Notification.permission === 'granted') {
+    try {
+      var titulo = '🚛 ' + (matricula || '');
+      var cuerpos = {
+        'verde':   '✅ Despacho completado — puede proceder',
+        'naranja': '⏳ Pendiente de autorización',
+        'rojo-10': '🔴 Inspección física — 10:00h',
+        'rojo-12': '🔴 Inspección física — 12:00h',
+        'rojo-14': '🔴 Inspección física — 14:00h',
+      };
+      new Notification(titulo, {
+        body: cuersos[circuito] || 'Estado actualizado',
+        silent: false,
+        requireInteraction: true,
+      });
+    } catch(e) {}
+  }
+
+  // 2. Audio HTML5 (funciona si el usuario tocó el botón de activar)
+  if (!sonidoListo) return;
   var snd = document.getElementById('snd-conductor');
-  if (!snd || !sonidoListo) return;
-  // Clonar el elemento para poder reproducirlo múltiples veces en iOS
-  var clon = snd.cloneNode(true);
-  clon.style.display = 'none';
-  document.body.appendChild(clon);
-  clon.play().catch(function() {});
-  // Limpiar el clon cuando termine
-  clon.addEventListener('ended', function() {
-    clon.remove();
-  });
-  setTimeout(function() { if (clon.parentNode) clon.remove(); }, 3000);
+  if (!snd) return;
+  // Intentar con currentTime primero (más compatible)
+  try {
+    snd.pause();
+    snd.currentTime = 0;
+    var p = snd.play();
+    if (p && p.catch) {
+      p.catch(function() {
+        // Si falla, intentar con clon
+        var clon = snd.cloneNode(true);
+        clon.style.display = 'none';
+        document.body.appendChild(clon);
+        clon.play().catch(function(){});
+        setTimeout(function() { if (clon.parentNode) clon.remove(); }, 3000);
+      });
+    }
+  } catch(e) {}
 }
 
 // ── RECORDATORIO NARANJA CADA 30 MIN ──

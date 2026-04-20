@@ -437,9 +437,9 @@ function asignar(id, circuito, mat) {
   var update = {
     circuito: circuito,
     archivado: archivado,
-    circuito_previo: previo
+    circuito_previo: previo,
+    mensaje_mostrador: false
   };
-  if (archivado) update.mensaje_mostrador = false;
 
   sb.from('despachos').update(update).eq('id', id)
     .then(function(res) {
