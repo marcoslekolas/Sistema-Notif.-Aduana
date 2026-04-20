@@ -799,88 +799,81 @@ async function registrar() {
   }
 }
 
-// ── REALTIME ──
-function suscribirEstado(id) {
-  // Polling cada 5 segundos - más fiable que Realtime en redes móviles
-  var _ultimoCircuito  = null;
-  var _ultimoMostrador = false;
-  var _intentos = 0;
+// ── POLLING ──
+var _ultimoCircuito  = null;
+var _ultimoMostrador = false;
+var _pollId          = null;
+var _pollDespachoId  = null;
 
-  function consultar() {
-    sb.from('despachos')
-      .select('circuito, mensaje_mostrador')
-      .eq('id', id)
-      .single()
-      .then(function(res) {
-        _intentos++;
-        var dot  = document.querySelector('.conexion-dot');
-        var txt  = document.querySelector('#txt-endirecto');
-
-        if (res.error || !res.data) {
-          // Error de red - mostrar indicador rojo
-          if (dot) dot.style.background = '#f87171';
-          if (txt) txt.textContent = 'Reconectando…';
-          return;
-        }
-
-        // Conexión OK
-        if (dot) dot.style.background = '#22c55e';
-        if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
-
-        var d = res.data;
-
-        // Solo actuar si hay cambio real en mostrador
-        if (d.mensaje_mostrador !== _ultimoMostrador) {
-          _ultimoMostrador = d.mensaje_mostrador;
-          if (d.mensaje_mostrador) {
-            mostrarAvisoMostrador();
-          } else {
-            var av = document.getElementById('aviso-mostrador');
-            if (av) av.style.display = 'none';
-          }
-        }
-
-        // Solo actuar si hay cambio real en circuito
-        if (d.circuito !== _ultimoCircuito) {
-          _ultimoCircuito = d.circuito;
-          if (d.circuito) {
-            actualizarPantalla(d);
-          }
-        }
-      })
-      .catch(function() {
-        var dot = document.querySelector('.conexion-dot');
+function consultarEstado() {
+  if (!_pollDespachoId) return;
+  sb.from('despachos')
+    .select('circuito, mensaje_mostrador')
+    .eq('id', _pollDespachoId)
+    .single()
+    .then(function(res) {
+      var dot = document.querySelector('.conexion-dot');
+      var txt = document.querySelector('#txt-endirecto');
+      if (res.error || !res.data) {
         if (dot) dot.style.background = '#f87171';
-      });
-  }
+        if (txt) txt.textContent = 'Reconectando…';
+        return;
+      }
+      if (dot) dot.style.background = '#22c55e';
+      if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
+      var d = res.data;
+      if (d.mensaje_mostrador !== _ultimoMostrador) {
+        _ultimoMostrador = d.mensaje_mostrador;
+        if (d.mensaje_mostrador) {
+          mostrarAvisoMostrador();
+        } else {
+          var av = document.getElementById('aviso-mostrador');
+          if (av) av.style.display = 'none';
+        }
+      }
+      if (d.circuito !== _ultimoCircuito) {
+        _ultimoCircuito = d.circuito;
+        if (d.circuito) actualizarPantalla(d);
+      }
+    })
+    .catch(function() {
+      var dot = document.querySelector('.conexion-dot');
+      if (dot) dot.style.background = '#f87171';
+    });
+}
 
-  //   // Primera consulta inmediata
-  consultar();
+function iniciarPolling(id) {
+  _pollDespachoId = id;
+  _ultimoCircuito  = null;
+  _ultimoMostrador = false;
+  // Consulta inmediata
+  consultarEstado();
+  // Limpiar intervalo anterior si existe
+  if (_pollId) clearInterval(_pollId);
+  _pollId = setInterval(consultarEstado, 5000);
+}
 
-  // Polling cada 5 segundos
-  if (window._pollInterval) clearInterval(window._pollInterval);
-  window._pollInterval = setInterval(consultar, 5000);
+function suscribirEstado(id) {
+  iniciarPolling(id);
 
-  // iOS congela setInterval cuando la pantalla se apaga o el navegador va a segundo plano
-  // visibilitychange fuerza una consulta inmediata al volver a primer plano
+  // Cuando el conductor vuelve a la app tras tenerla en segundo plano
   document.removeEventListener('visibilitychange', window._visHandler);
   window._visHandler = function() {
     if (document.visibilityState === 'visible') {
-      // Reiniciar el intervalo y consultar de inmediato
-      clearInterval(window._pollInterval);
-      consultar();
-      window._pollInterval = setInterval(consultar, 5000);
+      consultarEstado();
+      if (_pollId) clearInterval(_pollId);
+      _pollId = setInterval(consultarEstado, 5000);
     }
   };
   document.addEventListener('visibilitychange', window._visHandler);
 
-  // pageshow cubre el caso de iOS cuando vuelve de cache (back/forward)
+  // Caso iOS back/forward cache
   window.removeEventListener('pageshow', window._pageHandler);
   window._pageHandler = function(e) {
     if (e.persisted) {
-      clearInterval(window._pollInterval);
-      consultar();
-      window._pollInterval = setInterval(consultar, 5000);
+      consultarEstado();
+      if (_pollId) clearInterval(_pollId);
+      _pollId = setInterval(consultarEstado, 5000);
     }
   };
   window.addEventListener('pageshow', window._pageHandler);
