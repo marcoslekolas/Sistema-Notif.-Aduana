@@ -73,6 +73,8 @@ td{padding:15px 16px;vertical-align:middle}
 .viendo-dot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:blink 1.8s ease-in-out infinite}
 .nuevo-badge{display:inline-flex;align-items:center;font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#dc2626;border-radius:3px;padding:2px 7px;margin-left:8px;animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes popIn{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+@keyframes flashFila{0%{background:#fef9c3}60%{background:#fef9c3}100%{background:transparent}}
+.fila-flash{animation:flashFila 1.5s ease both}
 .acts{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .ab{padding:8px 14px;border-radius:4px;border:1px solid;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:filter .12s,transform .1s;white-space:nowrap}
 .ab:hover{filter:brightness(.9)}.ab:active{transform:scale(.97)}
@@ -435,7 +437,12 @@ function asignar(id, circuito, mat) {
   sb.from('despachos').update(update).eq('id', id)
     .then(function(res) {
       if (res.error) { toast('Error al actualizar', 'err'); }
-      else { toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : ''); }
+      else {
+        toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : '');
+        // Flash visual en la fila
+        var fila = document.getElementById('row-' + id);
+        if (fila) { fila.classList.remove('fila-flash'); void fila.offsetWidth; fila.classList.add('fila-flash'); }
+      }
       if (snd) snd.classList.remove('show');
     });
 }
@@ -456,7 +463,11 @@ function resolver(id, tipo, mat) {
   }).eq('id', id)
     .then(function(res) {
       if (res.error) { toast('Error al archivar', 'err'); }
-      else { toast('✓ ' + mat + (tipo==='naranja' ? ' autorizado' : ' inspeccionado') + ' y archivado', 'ok'); }
+      else {
+        toast('✓ ' + mat + (tipo==='naranja' ? ' autorizado' : ' inspeccionado') + ' y archivado', 'ok');
+        var fila = document.getElementById('row-' + id);
+        if (fila) { fila.classList.remove('fila-flash'); void fila.offsetWidth; fila.classList.add('fila-flash'); }
+      }
       if (snd) snd.classList.remove('show');
     });
 }

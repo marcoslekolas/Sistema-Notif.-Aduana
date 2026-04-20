@@ -733,27 +733,54 @@ async function registrar() {
 
 // ── REALTIME ──
 function suscribirEstado(id) {
-  suscripcion = sb.channel(`despacho-${id}`)
+  // Suscribirse a TODOS los cambios de la tabla y filtrar en cliente
+  // (más fiable que el filtro server-side que requiere configuración extra en Supabase)
+  suscripcion = sb.channel('conductor-estado-' + id)
     .on('postgres_changes', {
-      event: 'UPDATE', schema: 'public', table: 'despachos', filter: `id=eq.${id}`
+      event: 'UPDATE', schema: 'public', table: 'despachos'
     }, payload => {
       const d = payload.new;
+      // Filtrar: solo procesar si es nuestro despacho
+      if (d.id !== id) return;
       // Aviso de mostrador
       if (d.mensaje_mostrador) {
         mostrarAvisoMostrador();
       } else {
         document.getElementById('aviso-mostrador').style.display = 'none';
       }
-      // Actualizar circuito si cambió
-      if (d.circuito) actualizarPantalla(d);
+      // Actualizar pantalla siempre que haya cambio de circuito
+      actualizarPantalla(d);
     })
-    .subscribe();
+    .subscribe(function(status) {
+      // Actualizar indicador de conexión
+      const dot = document.querySelector('.conexion-dot');
+      const pill = document.querySelector('.conexion-pill');
+      if (status === 'SUBSCRIBED') {
+        if (dot) dot.style.background = '#22c55e';
+        if (pill) pill.style.color = '#22c55e';
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        if (dot) dot.style.background = '#f87171';
+        if (pill) pill.style.color = '#f87171';
+        // Reintentar conexión tras 3 segundos
+        setTimeout(function() { suscribirEstado(id); }, 3000);
+      }
+    });
 }
 
 // ── ACTUALIZAR PANTALLA ──
 function actualizarPantalla(despacho) {
   const c = despacho.circuito;
-  if (!c) return;
+  // Si no hay circuito asignado aún, mantener pantalla de espera
+  if (!c) {
+    const card = document.getElementById('estado-card');
+    if (card) {
+      card.className = 'estado-card waiting';
+      const t = T[idiomaActual];
+      document.getElementById('estado-titulo').textContent = t.esperando_titulo;
+      document.getElementById('estado-desc').textContent   = t.esperando_desc;
+    }
+    return;
+  }
   const t = T[idiomaActual];
 
   const card    = document.getElementById('estado-card');
