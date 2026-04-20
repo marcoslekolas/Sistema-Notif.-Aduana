@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Aduana · Estado de despacho</title>
+<link rel="manifest" href="manifest-conductor.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Despacho">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#f4f2ee">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;900&family=Archivo+Narrow:wght@400;500;600;700&display=swap');
@@ -222,7 +228,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 </div>
 
 <script>
-const SUPABASE_URL = 'https://aidkhuhthxtgwseqxejq.supabase.co';
+const SUPABASE_URL  = 'https://aidkhuhthxtgwseqxejq.supabase.co';
+const VAPID_PUBLIC  = 'BFTaCqVRQAyS4HIRTorV5TUvVRhuZmfdPz3y-guErNPqgJMazCi4cRolu2wW97omRX2nmPWmPK4dwupqkO3eeP8';
+const PUSH_FN_URL   = SUPABASE_URL + '/functions/v1/push-conductor';
 const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpZGtodWh0aHh0Z3dzZXF4ZWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTcwMDQsImV4cCI6MjA5MTIzMzAwNH0.9rMXoYgd9OzGYw7mPtRbuPtHZOjubMc8kZ0mSvawUyM';
 
 const { createClient } = supabase;
@@ -767,6 +775,8 @@ async function registrar() {
 
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
+    // Suscribir a push notifications (PWA instalada)
+    suscribirPush(despachoId);
 
   } catch {
     mostrarError(t.err_gen);
@@ -830,12 +840,36 @@ function suscribirEstado(id) {
       });
   }
 
-  // Primera consulta inmediata
+  //   // Primera consulta inmediata
   consultar();
 
   // Polling cada 5 segundos
   if (window._pollInterval) clearInterval(window._pollInterval);
   window._pollInterval = setInterval(consultar, 5000);
+
+  // iOS congela setInterval cuando la pantalla se apaga o el navegador va a segundo plano
+  // visibilitychange fuerza una consulta inmediata al volver a primer plano
+  document.removeEventListener('visibilitychange', window._visHandler);
+  window._visHandler = function() {
+    if (document.visibilityState === 'visible') {
+      // Reiniciar el intervalo y consultar de inmediato
+      clearInterval(window._pollInterval);
+      consultar();
+      window._pollInterval = setInterval(consultar, 5000);
+    }
+  };
+  document.addEventListener('visibilitychange', window._visHandler);
+
+  // pageshow cubre el caso de iOS cuando vuelve de cache (back/forward)
+  window.removeEventListener('pageshow', window._pageHandler);
+  window._pageHandler = function(e) {
+    if (e.persisted) {
+      clearInterval(window._pollInterval);
+      consultar();
+      window._pollInterval = setInterval(consultar, 5000);
+    }
+  };
+  window.addEventListener('pageshow', window._pageHandler);
 }
 
 // ── ACTUALIZAR PANTALLA ──
@@ -1191,6 +1225,69 @@ function descargarRecibo() {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
+
+// ── PWA: REGISTRO SERVICE WORKER + PUSH ──
+var swReg = null;
+
+async function registrarSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swReg = await navigator.serviceWorker.register('./conductor-sw.js');
+    console.log('SW registrado');
+  } catch(e) {
+    console.log('SW error:', e);
+  }
+}
+
+async function suscribirPush(despachoId) {
+  if (!swReg || !('PushManager' in window)) return;
+  try {
+    // Pedir permiso
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+
+    // Convertir clave pública VAPID
+    const vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC);
+
+    // Suscribirse al push service
+    const sub = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidKey,
+    });
+
+    // Guardar suscripción en Supabase vinculada a este despacho
+    await fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': 'Bearer ' + ANON_KEY,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        despacho_id: despachoId,
+        subscription: sub.toJSON(),
+        created_at: new Date().toISOString(),
+      }),
+    });
+
+    console.log('Push suscrito y guardado');
+  } catch(e) {
+    console.log('Push error:', e);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  var padding = '='.repeat((4 - base64String.length % 4) % 4);
+  var base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  var raw     = atob(base64);
+  var arr     = new Uint8Array(raw.length);
+  for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+// Registrar SW al cargar
+registrarSW();
 
 // ── FLASH VISUAL (alerta para iOS) ──
 function flashPantalla() {

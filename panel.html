@@ -199,6 +199,7 @@ td{padding:15px 16px;vertical-align:middle}
 <script>
 const SUPABASE_URL = 'https://aidkhuhthxtgwseqxejq.supabase.co';
 const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpZGtodWh0aHh0Z3dzZXF4ZWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTcwMDQsImV4cCI6MjA5MTIzMzAwNH0.9rMXoYgd9OzGYw7mPtRbuPtHZOjubMc8kZ0mSvawUyM';
+const PUSH_FN_URL  = SUPABASE_URL + '/functions/v1/push-conductor';
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, ANON_KEY);
@@ -446,9 +447,10 @@ function asignar(id, circuito, mat) {
       if (res.error) { toast('Error al actualizar', 'err'); }
       else {
         toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : '');
-        // Flash visual en la fila
         var fila = document.getElementById('row-' + id);
         if (fila) { fila.classList.remove('fila-flash'); void fila.offsetWidth; fila.classList.add('fila-flash'); }
+        // Enviar push notification al conductor
+        enviarPush(id, mat, circuito);
       }
       if (snd) snd.classList.remove('show');
     });
@@ -687,6 +689,18 @@ function generarJustificanteHTML(lista, esExportacion) {
   a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
   toast(esExportacion ? '⬇ ' + lista.length + ' declaraciones exportadas' : '⬇ Justificante de ' + lista[0].matricula, 'ok');
+}
+
+// ── ENVIAR PUSH AL CONDUCTOR ──
+function enviarPush(despachoId, matricula, circuito) {
+  fetch(PUSH_FN_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + ANON_KEY,
+    },
+    body: JSON.stringify({ despacho_id: despachoId, matricula: matricula, circuito: circuito }),
+  }).catch(function() {});
 }
 
 // ── TOAST ──
