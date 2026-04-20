@@ -226,6 +226,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <button onclick="pedirPermisoPush()" style="width:100%;background:#1a1816;color:#fff;border:none;border-radius:8px;padding:13px 14px;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
         🔔 Activar notificaciones con pantalla apagada
       </button>
+      <div id="push-diag" style="display:none;margin-top:8px;padding:10px 12px;background:#f8f7f4;border-radius:6px;font-family:var(--narrow);font-size:12px;font-weight:600;border:1px solid var(--border)"></div>
     </div>
   </div>
 
@@ -785,7 +786,8 @@ async function registrar() {
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
     // Mostrar botón de activar notificaciones push si es PWA
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Mostrar botón push siempre si el navegador soporta notificaciones
+    if ('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window) {
       document.getElementById('btn-push-wrap').style.display = 'block';
       document.getElementById('_push_id').value = despachoId;
     }
@@ -1238,14 +1240,59 @@ var swReg = null;
 
 async function pedirPermisoPush() {
   const despachoId = document.getElementById('_push_id').value;
-  if (!despachoId) return;
-  await suscribirPush(despachoId);
-  document.getElementById('btn-push-wrap').style.display = 'none';
-  // Confirmar al usuario
-  var btn = document.createElement('div');
-  btn.style.cssText = 'margin-top:8px;padding:11px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-family:var(--narrow);font-size:13px;font-weight:700;color:#15803d;text-align:center';
-  btn.textContent = '✓ Notificaciones activadas';
-  document.getElementById('btn-wake').insertAdjacentElement('afterend', btn);
+  const diagEl = document.getElementById('push-diag');
+
+  function diag(msg, color) {
+    if (diagEl) { diagEl.textContent = msg; diagEl.style.color = color || '#333'; diagEl.style.display = 'block'; }
+  }
+
+  if (!despachoId) { diag('Error: sin ID de despacho', '#b91c1c'); return; }
+  diag('Comprobando Service Worker…', '#666');
+
+  if (!('serviceWorker' in navigator)) { diag('❌ Service Worker no disponible', '#b91c1c'); return; }
+  if (!('PushManager' in window))      { diag('❌ Push no disponible en este navegador', '#b91c1c'); return; }
+
+  diag('Solicitando permiso…', '#666');
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { diag('❌ Permiso denegado: ' + perm, '#b91c1c'); return; }
+
+  diag('Suscribiendo al push…', '#666');
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    diag('SW listo. Suscribiendo…', '#666');
+
+    const vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC);
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidKey,
+    });
+
+    diag('Guardando en Supabase…', '#666');
+    const res = await fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': 'Bearer ' + ANON_KEY,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        despacho_id: despachoId,
+        subscription: sub.toJSON(),
+        created_at: new Date().toISOString(),
+      }),
+    });
+
+    if (res.ok || res.status === 201) {
+      diag('✅ Notificaciones activadas', '#15803d');
+      document.getElementById('btn-push-wrap').style.display = 'none';
+    } else {
+      const txt = await res.text();
+      diag('❌ Error guardando: ' + res.status + ' ' + txt, '#b91c1c');
+    }
+  } catch(e) {
+    diag('❌ Error: ' + e.message, '#b91c1c');
+  }
 }
 
 async function registrarSW() {
