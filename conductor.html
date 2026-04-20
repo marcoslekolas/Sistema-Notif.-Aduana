@@ -135,14 +135,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
   </div>
 
-  <div class="field">
+  <div class="field" id="campo-matricula">
     <label id="lbl-mat">Matrícula del vehículo</label>
     <input type="text" id="inp-mat" placeholder="1234ABC" maxlength="12"
       autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text">
     <div class="field-hint" id="hint-mat">Matrícula del camión o semirremolque</div>
   </div>
 
-  <div class="field">
+  <div class="field" id="campo-telefono">
     <label id="lbl-tel">Teléfono móvil</label>
     <div class="tel-wrap">
       <div class="prefix-box" id="prefix-box">+34</div>
@@ -167,7 +167,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <span id="btn-txt">Registrar y ver estado</span>
   </button>
 
-  <div class="link-recover">
+  <div class="link-recover" id="link-recover-wrap">
     <button onclick="toggleRecover()" id="btn-recover-link">¿Ya te registraste antes y cerraste la página?</button>
   </div>
 
@@ -179,6 +179,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <button class="btn-recover" onclick="recuperar()" id="btn-rec">Consultar</button>
     </div>
     <div class="recover-err" id="recover-err"></div>
+    <button onclick="toggleRecover()" style="margin-top:12px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:var(--narrow);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:.04em" id="btn-volver">← Volver al registro</button>
   </div>
 </div>
 
@@ -260,6 +261,7 @@ const T = {
     prefix: '+34',
     btn_recibo: 'Descargar justificante de declaración',
     decl_titulo_lang: 'Declaración (Español)',
+    btn_volver: '← Volver al registro',
     aviso_mostrador: 'Por favor, acuda al mostrador de despachos',
   },
   en: {
@@ -297,6 +299,7 @@ const T = {
     prefix: '+44',
     btn_recibo: 'Download declaration receipt',
     decl_titulo_lang: 'Declaration (English)',
+    btn_volver: '← Back to registration',
     aviso_mostrador: 'Please proceed to the customs desk',
   },
   fr: {
@@ -334,6 +337,7 @@ const T = {
     prefix: '+33',
     btn_recibo: 'Télécharger le justificatif de déclaration',
     decl_titulo_lang: 'Déclaration (Français)',
+    btn_volver: '← Retour à l\'enregistrement',
     aviso_mostrador: 'Veuillez vous présenter au guichet des douanes',
   },
   pt: {
@@ -371,6 +375,7 @@ const T = {
     prefix: '+351',
     btn_recibo: 'Descarregar justificativo de declaração',
     decl_titulo_lang: 'Declaração (Português)',
+    btn_volver: '← Voltar ao registo',
     aviso_mostrador: 'Por favor, dirija-se ao balcão de despachos',
   },
   ro: {
@@ -408,6 +413,7 @@ const T = {
     prefix: '+40',
     btn_recibo: 'Descărcați dovada declarației',
     decl_titulo_lang: 'Declarație (Română)',
+    btn_volver: '← Înapoi la înregistrare',
     aviso_mostrador: 'Vă rugăm să vă prezentați la ghișeul vamal',
   },
   pl: {
@@ -445,6 +451,7 @@ const T = {
     prefix: '+48',
     btn_recibo: 'Pobierz potwierdzenie deklaracji',
     decl_titulo_lang: 'Deklaracja (Polski)',
+    btn_volver: '← Powrót do rejestracji',
     aviso_mostrador: 'Prosimy zgłosić się do okienka celnego',
   },
   de: {
@@ -482,6 +489,7 @@ const T = {
     prefix: '+49',
     btn_recibo: 'Erklärungsbeleg herunterladen',
     decl_titulo_lang: 'Erklärung (Deutsch)',
+    btn_volver: '← Zurück zur Anmeldung',
     aviso_mostrador: 'Bitte begeben Sie sich zum Zollschalter',
   },
   lt: {
@@ -519,6 +527,7 @@ const T = {
     prefix: '+370',
     btn_recibo: 'Atsisiųsti deklaracijos kvitą',
     decl_titulo_lang: 'Deklaracija (Lietuvių)',
+    btn_volver: '← Grįžti į registraciją',
     aviso_mostrador: 'Prašome atvykti prie muitinės langelio',
   },
   ru: {
@@ -556,6 +565,7 @@ const T = {
     prefix: '+7',
     btn_recibo: 'Скачать квитанцию декларации',
     decl_titulo_lang: 'Декларация (Русский)',
+    btn_volver: '← Вернуться к регистрации',
     aviso_mostrador: 'Пожалуйста, подойдите к стойке таможни',
   },
   it: {
@@ -593,6 +603,7 @@ const T = {
     prefix: '+39',
     btn_recibo: 'Scarica la ricevuta della dichiarazione',
     decl_titulo_lang: 'Dichiarazione (Italiano)',
+    btn_volver: '← Torna alla registrazione',
     aviso_mostrador: 'Si prega di recarsi allo sportello doganale',
   },
 };
@@ -627,6 +638,7 @@ function setLang(lang) {
   if (t.decl_check)    document.getElementById('decl-check-label').textContent  = t.decl_check;
   if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
   if (t.btn_recibo)    document.getElementById('btn-recibo-txt').textContent     = t.btn_recibo;
+  if (t.btn_volver)    document.getElementById('btn-volver').textContent           = t.btn_volver;
 
   // Si está en pantalla de espera, actualizar textos
   const card = document.getElementById('estado-card');
@@ -821,12 +833,29 @@ function actualizarPantalla(despacho) {
 
 // ── RECUPERAR ESTADO ──
 function toggleRecover() {
-  const box = document.getElementById('recover-box');
+  const box     = document.getElementById('recover-box');
   const visible = box.style.display === 'block';
-  box.style.display = visible ? 'none' : 'block';
+
   if (!visible) {
-    const inp = document.getElementById('inp-recover');
-    inp.focus();
+    // Ocultar todo el formulario principal, mostrar solo recuperación
+    document.getElementById('campo-matricula').style.display   = 'none';
+    document.getElementById('campo-telefono').style.display    = 'none';
+    document.getElementById('declaracion-box').style.display   = 'none';
+    document.getElementById('form-err').style.display          = 'none';
+    document.getElementById('btn-reg').style.display           = 'none';
+    document.getElementById('link-recover-wrap').style.display = 'none';
+    box.style.display = 'block';
+    // Scroll al top y foco
+    window.scrollTo(0, 0);
+    setTimeout(function() { document.getElementById('inp-recover').focus(); }, 100);
+  } else {
+    // Restaurar formulario completo
+    document.getElementById('campo-matricula').style.display   = 'block';
+    document.getElementById('campo-telefono').style.display    = 'block';
+    document.getElementById('declaracion-box').style.display   = 'block';
+    document.getElementById('btn-reg').style.display           = 'flex';
+    document.getElementById('link-recover-wrap').style.display = 'block';
+    box.style.display = 'none';
   }
 }
 
