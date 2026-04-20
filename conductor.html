@@ -218,6 +218,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <button id="btn-activar-sonido" onclick="activarSonidoConductor()" style="margin-top:16px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--narrow);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px">
       🔔 <span id="btn-sonido-txt">Toca para activar alerta sonora</span>
     </button>
+    <button id="btn-wake" onclick="activarWakeLock()" style="margin-top:8px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--narrow);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px">
+      📱 Mantener pantalla encendida
+    </button>
+    <div id="btn-push-wrap" style="display:none;margin-top:8px">
+      <input type="hidden" id="_push_id" value="">
+      <button onclick="pedirPermisoPush()" style="width:100%;background:#1a1816;color:#fff;border:none;border-radius:8px;padding:13px 14px;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        🔔 Activar notificaciones con pantalla apagada
+      </button>
+    </div>
   </div>
 
   <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
@@ -775,8 +784,13 @@ async function registrar() {
 
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
-    // Suscribir a push notifications (PWA instalada)
-    suscribirPush(despachoId);
+    // Mostrar botón de activar notificaciones push si es PWA
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      document.getElementById('btn-push-wrap').style.display = 'block';
+      document.getElementById('_push_id').value = despachoId;
+    }
+    // Mantener pantalla encendida mientras espera
+    activarWakeLock();
 
   } catch {
     mostrarError(t.err_gen);
@@ -1229,6 +1243,18 @@ function descargarRecibo() {
 // ── PWA: REGISTRO SERVICE WORKER + PUSH ──
 var swReg = null;
 
+async function pedirPermisoPush() {
+  const despachoId = document.getElementById('_push_id').value;
+  if (!despachoId) return;
+  await suscribirPush(despachoId);
+  document.getElementById('btn-push-wrap').style.display = 'none';
+  // Confirmar al usuario
+  var btn = document.createElement('div');
+  btn.style.cssText = 'margin-top:8px;padding:11px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-family:var(--narrow);font-size:13px;font-weight:700;color:#15803d;text-align:center';
+  btn.textContent = '✓ Notificaciones activadas';
+  document.getElementById('btn-wake').insertAdjacentElement('afterend', btn);
+}
+
 async function registrarSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
@@ -1288,6 +1314,51 @@ function urlBase64ToUint8Array(base64String) {
 
 // Registrar SW al cargar
 registrarSW();
+
+// ── WAKE LOCK: mantener pantalla encendida ──
+var wakeLock = null;
+
+async function activarWakeLock() {
+  // Método 1: Screen Wake Lock API (Chrome Android, Safari iOS 16.4+)
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      actualizarBtnWake(true);
+      // Reactivar si el sistema lo libera (ej: al volver de segundo plano)
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && !wakeLock) {
+          activarWakeLock();
+        }
+      });
+      return;
+    } catch(e) {}
+  }
+  // Método 2: Vídeo invisible en bucle (iOS < 16.4, Firefox)
+  var vid = document.getElementById('wake-video');
+  if (!vid) {
+    vid = document.createElement('video');
+    vid.id = 'wake-video';
+    vid.setAttribute('playsinline', '');
+    vid.setAttribute('muted', '');
+    vid.setAttribute('loop', '');
+    vid.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;top:0;left:0;pointer-events:none';
+    // Vídeo mínimo en base64 (1x1 px, 1 segundo)
+    vid.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAArdtZGF0AAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQ3OSBkZDc5YTYxIC0gSC4yNjQvTVBFRy00IEFWQ2NvZGVjIC0gQ29weWxlZnQgMjAwMy0yMDE0IC0gaHR0cDovL3d3dy52aWRlb2xhbi5vcmcveDI2NC5odG1sIC0gb3B0aW9uczogY2FiYWM9MSByZWY9MyBkZWJsb2NrPTE6MDowIGFuYWx5c2U9MHgzOjB4MTEzIG1lPWhleCBzdWJtZT03IHBzeT0xIHBzeV9yZD0xLjAwOjAuMDAgbWl4ZWRfcmVmPTEgbWVfcmFuZ2U9MTYgY2hyb21hX21lPTEgdHJlbGxpcz0xIDh4OGRjdD0xIGNxbT0wIGRlYWR6b25lPTIxLDExIGZhc3RfcHNraXA9MSBjaHJvbWFfcXBfb2Zmc2V0PS0yIHRocmVhZHM9NjAgbG9va2FoZWFkX3RocmVhZHM9MTAgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MyBiX3B5cmFtaWQ9MiByZWZzPTMgbm9fcHNraXA9MCBzdWJwZT0wIGVuY29kZT0zIHN1YnBlPTcgbWVyZ2VfbGV2ZWw9MSBxcGN1cnZlPTAuMDAgZmFkZV9jb21wZW5zYXRlPTAgcXVhbnR6ZXI9aCBpbnRlcnBvbGF0ZT0wIHJhd3FwPTAgdmlkZW9fcGFkZGluZz0gZGlyZWN0X3ByZWQ9MSBudW1fc2xpY2VzPTEgc2xpY2VfbWF4X3NpemU9MCBzbGljZV9tYXhfbWJzPTAgc2xpY2VfbWluX21icz0wIG92ZXJzY2FuPTAgdmlkZW9fZm9ybWF0PTUgY29sb3JfcHJpbT0yIHRyYW5zZmVyPTIgY29sb3JtYXRyaXg9MiBmb3JjZWRfY2xyPTAgY2hyb21hX2xvYz0wIHZpZGVvX2Z1bGxfcmFuZ2U9MCBzY2VuZWN1dD00MCBpbnRyYV9yZWZyZXNoPTAgcmNfbG9va2FoZWFkPTQwIHJjPWNyZiBtYnRyZWU9MSBjcmY9MjMuMCBxY29tcD0wLjYwIHFwbWluPTAgcXBtYXg9NjkgcXBzdGVwPTQgaXBfcmF0aW89MS40MCBhcT0xOjEuMDAAgAAAAA9liIQAV/4iAN3h';
+    document.body.appendChild(vid);
+  }
+  vid.play().catch(function(){});
+  actualizarBtnWake(true);
+}
+
+function actualizarBtnWake(activo) {
+  var btn = document.getElementById('btn-wake');
+  if (!btn) return;
+  if (activo) {
+    btn.style.color = '#22c55e';
+    btn.style.borderColor = '#22c55e';
+    btn.textContent = '📱 Pantalla activa';
+  }
+}
 
 // ── FLASH VISUAL (alerta para iOS) ──
 function flashPantalla() {
