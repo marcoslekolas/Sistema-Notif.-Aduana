@@ -777,38 +777,61 @@ async function registrar() {
 
 // ── REALTIME ──
 function suscribirEstado(id) {
-  // Suscribirse a TODOS los cambios de la tabla y filtrar en cliente
-  // (más fiable que el filtro server-side que requiere configuración extra en Supabase)
   suscripcion = sb.channel('conductor-estado-' + id)
     .on('postgres_changes', {
       event: 'UPDATE', schema: 'public', table: 'despachos'
-    }, payload => {
+    }, function(payload) {
       const d = payload.new;
-      // Filtrar: solo procesar si es nuestro despacho
       if (d.id !== id) return;
-      // Aviso de mostrador
       if (d.mensaje_mostrador) {
         mostrarAvisoMostrador();
       } else {
         document.getElementById('aviso-mostrador').style.display = 'none';
       }
-      // Actualizar pantalla siempre que haya cambio de circuito
       actualizarPantalla(d);
     })
     .subscribe(function(status) {
-      // Actualizar indicador de conexión
-      const dot = document.querySelector('.conexion-dot');
+      const dot  = document.querySelector('.conexion-dot');
       const pill = document.querySelector('.conexion-pill');
+      const txt  = document.querySelector('#txt-endirecto');
       if (status === 'SUBSCRIBED') {
-        if (dot) dot.style.background = '#22c55e';
-        if (pill) pill.style.color = '#22c55e';
+        if (dot)  dot.style.background  = '#22c55e';
+        if (pill) pill.style.color      = '#22c55e';
+        if (txt)  txt.textContent       = T[idiomaActual].endirecto || 'En directo';
       } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        if (dot) dot.style.background = '#f87171';
-        if (pill) pill.style.color = '#f87171';
-        // Reintentar conexión tras 3 segundos
+        if (dot)  dot.style.background  = '#f87171';
+        if (pill) pill.style.color      = '#f87171';
+        if (txt)  txt.textContent       = 'Reconectando…';
         setTimeout(function() { suscribirEstado(id); }, 3000);
       }
     });
+
+  // POLLING DE RESPALDO cada 8 segundos
+  // Si Realtime falla (común en redes móviles), el polling garantiza la actualización
+  if (window._pollInterval) clearInterval(window._pollInterval);
+  window._pollInterval = setInterval(function() {
+    sb.from('despachos')
+      .select('circuito, mensaje_mostrador, archivado')
+      .eq('id', id)
+      .single()
+      .then(function(res) {
+        if (res.data) {
+          // Actualizar aviso mostrador
+          if (res.data.mensaje_mostrador) {
+            mostrarAvisoMostrador();
+          } else {
+            var av = document.getElementById('aviso-mostrador');
+            if (av) av.style.display = 'none';
+          }
+          // Actualizar circuito si hay cambio
+          var card = document.getElementById('estado-card');
+          var yaResuelto = card && !card.classList.contains('waiting');
+          if (res.data.circuito && !yaResuelto) {
+            actualizarPantalla(res.data);
+          }
+        }
+      });
+  }, 8000);
 }
 
 // ── ACTUALIZAR PANTALLA ──
