@@ -831,9 +831,9 @@ function consultarEstado() {
           if (av) av.style.display = 'none';
         }
       }
-      if (d.circuito !== _ultimoCircuito) {
-        _ultimoCircuito = d.circuito;
-        if (d.circuito) actualizarPantalla(d);
+        if (JSON.stringify(d.circuito) !== JSON.stringify(_ultimoCircuito)) {
+          _ultimoCircuito = d.circuito;
+          actualizarPantalla(d);
       }
     })
     .catch(function() {
