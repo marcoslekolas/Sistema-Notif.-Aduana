@@ -786,11 +786,9 @@ async function registrar() {
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
     // Mostrar botón de activar notificaciones push si es PWA
-    // Mostrar botón push siempre si el navegador soporta notificaciones
-    if ('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window) {
-      document.getElementById('btn-push-wrap').style.display = 'block';
-      document.getElementById('_push_id').value = despachoId;
-    }
+    // Mostrar botón push siempre para diagnóstico
+    document.getElementById('btn-push-wrap').style.display = 'block';
+    document.getElementById('_push_id').value = despachoId;
     // Mantener pantalla encendida mientras espera
     activarWakeLock();
 
