@@ -231,7 +231,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 
   <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
-  <div id="poll-counter" style="margin-top:8px;font-family:monospace;font-size:11px;color:#5a5e68;text-align:center"></div>
   <button class="recibo-btn" id="btn-recibo" onclick="descargarRecibo()" style="display:none;margin-top:12px">
     <span>⬇</span><span id="btn-recibo-txt">Descargar justificante de declaración</span>
   </button>
@@ -792,9 +791,12 @@ async function registrar() {
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
     // Mostrar botón de activar notificaciones push si es PWA
-    // Mostrar botón push siempre para diagnóstico
-    document.getElementById('btn-push-wrap').style.display = 'block';
-    document.getElementById('_push_id').value = despachoId;
+    // Mostrar botón push solo en Android (Chrome soporta PushManager, iOS Safari no)
+    var esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (!esIOS && 'PushManager' in window) {
+      document.getElementById('btn-push-wrap').style.display = 'block';
+      document.getElementById('_push_id').value = despachoId;
+    }
     // Mantener pantalla encendida mientras espera
     activarWakeLock();
 
@@ -813,12 +815,6 @@ var _pollId          = null;
 var _pollDespachoId  = null;
 
 function consultarEstado() {
-  var counter = document.getElementById('poll-counter');
-  if (counter) {
-    var n = parseInt(counter.dataset.n||0)+1;
-    counter.dataset.n = n;
-    counter.textContent = 'Poll #' + n + ' id=' + (_pollDespachoId||'NULL') + ' ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  }
   if (!_pollDespachoId) return;
   var url = SUPABASE_URL + '/rest/v1/despachos?id=eq.' + _pollDespachoId
     + '&select=circuito,mensaje_mostrador&limit=1';
@@ -842,8 +838,7 @@ function consultarEstado() {
     }
     if (dot) dot.style.background = '#22c55e';
     if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
-    var counter2 = document.getElementById('poll-counter');
-    if (counter2) counter2.textContent += ' circ=' + (data[0]?data[0].circuito:'null');
+
     var d = data[0];
     // Mostrador
     if (d.mensaje_mostrador !== _ultimoMostrador) {
