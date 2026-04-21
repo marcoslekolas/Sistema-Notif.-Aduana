@@ -850,56 +850,10 @@ function consultarEstado() {
   });
 }
 
-var _worker = null;
-
 function iniciarPolling(id) {
   _pollDespachoId  = id;
   _ultimoCircuito  = null;
   _ultimoMostrador = false;
-
-  // Intentar Web Worker (hilo separado, más fiable en iOS)
-  if (typeof Worker !== 'undefined') {
-    if (_worker) _worker.terminate();
-    _worker = new Worker('poll-worker.js');
-    _worker.onmessage = function(e) {
-      var msg = e.data;
-      var dot = document.querySelector('.conexion-dot');
-      var txt = document.querySelector('#txt-endirecto');
-      if (msg.type === 'error') {
-        if (dot) dot.style.background = '#f87171';
-        if (txt) txt.textContent = 'Reconectando…';
-        return;
-      }
-      if (dot) dot.style.background = '#22c55e';
-      if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
-      var d = msg.data;
-      if (d.mensaje_mostrador !== _ultimoMostrador) {
-        _ultimoMostrador = d.mensaje_mostrador;
-        if (d.mensaje_mostrador) mostrarAvisoMostrador();
-        else { var av = document.getElementById('aviso-mostrador'); if (av) av.style.display = 'none'; }
-      }
-      if (JSON.stringify(d.circuito) !== JSON.stringify(_ultimoCircuito)) {
-        _ultimoCircuito = d.circuito;
-        actualizarPantalla(d);
-      }
-    };
-    _worker.onerror = function() {
-      // Si el Worker falla, caer en polling tradicional
-      iniciarPollingFallback(id);
-    };
-    _worker.postMessage({
-      type: 'start',
-      supabaseUrl: SUPABASE_URL,
-      anonKey: ANON_KEY,
-      despachoId: id
-    });
-  } else {
-    // Fallback: polling en hilo principal
-    iniciarPollingFallback(id);
-  }
-}
-
-function iniciarPollingFallback(id) {
   consultarEstado();
   if (_pollId) clearInterval(_pollId);
   _pollId = setInterval(consultarEstado, 5000);
@@ -908,19 +862,23 @@ function iniciarPollingFallback(id) {
 function suscribirEstado(id) {
   iniciarPolling(id);
 
-  // Al volver a primer plano - reiniciar worker
   document.removeEventListener('visibilitychange', window._visHandler);
   window._visHandler = function() {
     if (document.visibilityState === 'visible') {
-      iniciarPolling(id);
+      consultarEstado();
+      if (_pollId) clearInterval(_pollId);
+      _pollId = setInterval(consultarEstado, 5000);
     }
   };
   document.addEventListener('visibilitychange', window._visHandler);
 
-  // iOS back/forward cache
   window.removeEventListener('pageshow', window._pageHandler);
   window._pageHandler = function(e) {
-    if (e.persisted) iniciarPolling(id);
+    if (e.persisted) {
+      consultarEstado();
+      if (_pollId) clearInterval(_pollId);
+      _pollId = setInterval(consultarEstado, 5000);
+    }
   };
   window.addEventListener('pageshow', window._pageHandler);
 }
