@@ -231,6 +231,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 
   <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
+  <div id="poll-counter" style="margin-top:8px;font-family:monospace;font-size:11px;color:#5a5e68;text-align:center"></div>
   <button class="recibo-btn" id="btn-recibo" onclick="descargarRecibo()" style="display:none;margin-top:12px">
     <span>⬇</span><span id="btn-recibo-txt">Descargar justificante de declaración</span>
   </button>
@@ -829,6 +830,9 @@ function consultarEstado() {
     }
     if (dot) dot.style.background = '#22c55e';
     if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
+    var counter = document.getElementById('poll-counter');
+    if (counter) counter.textContent = 'Poll #' + (parseInt(counter.dataset.n||0)+1) + ' · ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' · circ=' + (data[0]?data[0].circuito:'?');
+    if (counter) counter.dataset.n = parseInt(counter.dataset.n||0)+1;
     var d = data[0];
     // Mostrador
     if (d.mensaje_mostrador !== _ultimoMostrador) {
