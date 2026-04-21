@@ -747,7 +747,7 @@ async function registrar() {
     return;
   }
 
-  const telefono = T[idiomaActual].prefix + tel;
+  const telefono = tel.length > 0 ? T[idiomaActual].prefix + tel : '';
 
   setLoading(true);
 
@@ -760,7 +760,13 @@ async function registrar() {
         'Authorization': `Bearer ${ANON_KEY}`,
         'Prefer': 'return=representation'
       },
-      body: JSON.stringify({ matricula: mat, telefono, declaracion_aceptada: true, hora_declaracion: new Date().toISOString(), hora_entrada: new Date().toISOString() })
+      body: JSON.stringify({
+        matricula: mat,
+        telefono: telefono,
+        hora_entrada: new Date().toISOString(),
+        declaracion_aceptada: true,
+        hora_declaracion: new Date().toISOString()
+      })
     });
 
     if (!res.ok) throw new Error();
@@ -781,8 +787,7 @@ async function registrar() {
     if (t.btn_recibo) document.getElementById('btn-recibo-txt').textContent = t.btn_recibo;
     // Mostrar hash si está disponible
     const hashEl = document.getElementById('hash-display');
-    hashEl.textContent = hash ? 'SHA-256: ' + hash : '';
-    hashEl.style.display = hash ? 'block' : 'none';
+    if (hashEl) { hashEl.textContent = ''; hashEl.style.display = 'none'; }
 
     suscribirEstado(despachoId);
     iniciarRecordatorioNaranja();
@@ -793,8 +798,9 @@ async function registrar() {
     // Mantener pantalla encendida mientras espera
     activarWakeLock();
 
-  } catch {
-    mostrarError(t.err_gen);
+  } catch(e) {
+    console.error('Error registro:', e);
+    mostrarError((t.err_gen||'Error') + (e.message ? ': ' + e.message : ''));
   } finally {
     setLoading(false);
   }
