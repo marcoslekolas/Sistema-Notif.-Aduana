@@ -807,21 +807,29 @@ var _pollDespachoId  = null;
 
 function consultarEstado() {
   if (!_pollDespachoId) return;
-  sb.from('despachos')
-    .select('circuito, mensaje_mostrador')
-    .eq('id', _pollDespachoId)
-    .single()
-    .then(function(res) {
+  // Usar fetch nativo en vez de supabase-js - más fiable en iOS Safari
+  var url = SUPABASE_URL + '/rest/v1/despachos?id=eq.' + _pollDespachoId + '&select=circuito,mensaje_mostrador&limit=1';
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'apikey': ANON_KEY,
+      'Authorization': 'Bearer ' + ANON_KEY,
+      'Cache-Control': 'no-cache, no-store',
+      'Pragma': 'no-cache'
+    }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
       var dot = document.querySelector('.conexion-dot');
       var txt = document.querySelector('#txt-endirecto');
-      if (res.error || !res.data) {
+      if (!data || !data[0]) {
         if (dot) dot.style.background = '#f87171';
         if (txt) txt.textContent = 'Reconectando…';
         return;
       }
       if (dot) dot.style.background = '#22c55e';
       if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
-      var d = res.data;
+      var d = data[0];
       if (d.mensaje_mostrador !== _ultimoMostrador) {
         _ultimoMostrador = d.mensaje_mostrador;
         if (d.mensaje_mostrador) {
@@ -835,11 +843,11 @@ function consultarEstado() {
           _ultimoCircuito = d.circuito;
           actualizarPantalla(d);
       }
-    })
-    .catch(function() {
-      var dot = document.querySelector('.conexion-dot');
-      if (dot) dot.style.background = '#f87171';
-    });
+  })
+  .catch(function() {
+    var dot = document.querySelector('.conexion-dot');
+    if (dot) dot.style.background = '#f87171';
+  });
 }
 
 function iniciarPolling(id) {
