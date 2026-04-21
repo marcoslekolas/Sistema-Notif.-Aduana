@@ -807,6 +807,12 @@ var _pollId          = null;
 var _pollDespachoId  = null;
 
 function consultarEstado() {
+  var counter = document.getElementById('poll-counter');
+  if (counter) {
+    var n = parseInt(counter.dataset.n||0)+1;
+    counter.dataset.n = n;
+    counter.textContent = 'Poll #' + n + ' id=' + (_pollDespachoId||'NULL') + ' ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
   if (!_pollDespachoId) return;
   var url = SUPABASE_URL + '/rest/v1/despachos?id=eq.' + _pollDespachoId
     + '&select=circuito,mensaje_mostrador&limit=1';
@@ -830,9 +836,8 @@ function consultarEstado() {
     }
     if (dot) dot.style.background = '#22c55e';
     if (txt) txt.textContent = T[idiomaActual].endirecto || 'En directo';
-    var counter = document.getElementById('poll-counter');
-    if (counter) counter.textContent = 'Poll #' + (parseInt(counter.dataset.n||0)+1) + ' · ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' · circ=' + (data[0]?data[0].circuito:'?');
-    if (counter) counter.dataset.n = parseInt(counter.dataset.n||0)+1;
+    var counter2 = document.getElementById('poll-counter');
+    if (counter2) counter2.textContent += ' circ=' + (data[0]?data[0].circuito:'null');
     var d = data[0];
     // Mostrador
     if (d.mensaje_mostrador !== _ultimoMostrador) {
