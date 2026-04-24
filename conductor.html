@@ -107,6 +107,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .declaracion-check:hover{background:#f4f2ee}
 .declaracion-check input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;accent-color:#1a1816;cursor:pointer}
 .declaracion-check-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#1a1816;line-height:1.3;letter-spacing:.02em}
+.btn-whatsapp{width:100%;margin-top:10px;padding:14px;background:#25d366;color:#fff;border:none;border-radius:8px;font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s}
+.btn-whatsapp:hover{background:#128c7e}
+.btn-whatsapp:active{transform:scale(.99)}
 .recibo-btn{width:100%;margin-top:10px;padding:13px;background:#1a1816;color:#fff;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
 .recibo-btn:hover{background:#333}
 .hash-tag{font-family:'Courier New',monospace;font-size:9px;color:#8a8480;word-break:break-all;padding:6px 10px;background:#f4f2ee;border-radius:4px;border:1px solid #dedad2}
@@ -215,6 +218,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <span id="aviso-texto">Por favor, acuda al mostrador de despachos</span>
     </div>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
+    <div id="instruccion-pantalla" style="display:none;margin-top:20px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px 16px;display:none;text-align:left;gap:12px;align-items:flex-start;flex-direction:row">
+      <span style="font-size:22px;flex-shrink:0">&#128241;</span>
+      <div>
+        <div style="font-family:var(--narrow);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px" id="txt-instr-titulo">Mantén esta pantalla visible</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5" id="txt-instr-desc">El resultado aparecerá aquí automáticamente. No cierres ni minimices el navegador.</div>
+      </div>
+    </div>
     <button id="btn-activar-sonido" onclick="activarSonidoConductor()" style="margin-top:16px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--narrow);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px">
       🔔 <span id="btn-sonido-txt">Toca para activar alerta sonora</span>
     </button>
@@ -231,6 +241,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 
   <div class="estado-footer" id="txt-footer">No cierres esta página · Se actualiza sola</div>
+  <div id="whatsapp-wrap" style="display:none;margin-top:12px">
+    <button class="btn-whatsapp" id="btn-whatsapp" onclick="abrirWhatsApp()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.544 4.122 1.497 5.868L0 24l6.305-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.875 9.875 0 01-5.032-1.378l-.36-.214-3.742.981 1-3.648-.235-.374A9.86 9.86 0 012.106 12C2.106 6.58 6.58 2.106 12 2.106c5.421 0 9.894 4.474 9.894 9.894 0 5.421-4.473 9.894-9.894 9.894z"/></svg>
+      <span id="btn-wa-txt">Confirmar registro por WhatsApp</span>
+    </button>
+    <div style="margin-top:6px;font-size:11px;color:var(--muted);text-align:center;font-family:var(--sans)" id="txt-wa-hint">Toca para abrir WhatsApp · Solo debes pulsar Enviar</div>
+  </div>
   <button class="recibo-btn" id="btn-recibo" onclick="descargarRecibo()" style="display:none;margin-top:12px">
     <span>⬇</span><span id="btn-recibo-txt">Descargar justificante de declaración</span>
   </button>
@@ -287,6 +304,8 @@ const T = {
     prefix: '+34',
     btn_recibo: 'Descargar justificante de declaración',
     decl_titulo_lang: 'Declaración (Español)',
+    btn_wa: 'Confirmar registro por WhatsApp',
+    wa_activado: 'Recibirás los avisos de tu despacho por WhatsApp',
     btn_volver: '← Volver al registro',
     sonido_activar: 'Toca para activar alerta sonora',
     sonido_activo: '✓ Alerta sonora activada',
@@ -327,6 +346,8 @@ const T = {
     prefix: '+44',
     btn_recibo: 'Download declaration receipt',
     decl_titulo_lang: 'Declaration (English)',
+    btn_wa: 'Confirm registration via WhatsApp',
+    wa_activado: 'You will receive clearance updates via WhatsApp',
     btn_volver: '← Back to registration',
     sonido_activar: 'Tap to activate sound alert',
     sonido_activo: '✓ Sound alert activated',
@@ -367,6 +388,8 @@ const T = {
     prefix: '+33',
     btn_recibo: 'Télécharger le justificatif de déclaration',
     decl_titulo_lang: 'Déclaration (Français)',
+    btn_wa: 'Confirmer l\'enregistrement par WhatsApp',
+    wa_activado: 'Vous recevrez les mises à jour par WhatsApp',
     btn_volver: '← Retour à l\'enregistrement',
     sonido_activar: 'Appuyez pour activer l\'alerte sonore',
     sonido_activo: '✓ Alerte sonore activée',
@@ -407,6 +430,8 @@ const T = {
     prefix: '+351',
     btn_recibo: 'Descarregar justificativo de declaração',
     decl_titulo_lang: 'Declaração (Português)',
+    btn_wa: 'Confirmar registo via WhatsApp',
+    wa_activado: 'Receberá as atualizações do despacho por WhatsApp',
     btn_volver: '← Voltar ao registo',
     sonido_activar: 'Toque para ativar alerta sonora',
     sonido_activo: '✓ Alerta sonora ativada',
@@ -447,6 +472,8 @@ const T = {
     prefix: '+40',
     btn_recibo: 'Descărcați dovada declarației',
     decl_titulo_lang: 'Declarație (Română)',
+    btn_wa: 'Confirmați înregistrarea prin WhatsApp',
+    wa_activado: 'Veți primi actualizări prin WhatsApp',
     btn_volver: '← Înapoi la înregistrare',
     sonido_activar: 'Atingeți pentru a activa alerta sonoră',
     sonido_activo: '✓ Alertă sonoră activată',
@@ -487,6 +514,8 @@ const T = {
     prefix: '+48',
     btn_recibo: 'Pobierz potwierdzenie deklaracji',
     decl_titulo_lang: 'Deklaracja (Polski)',
+    btn_wa: 'Potwierdź rejestrację przez WhatsApp',
+    wa_activado: 'Otrzymasz aktualizacje przez WhatsApp',
     btn_volver: '← Powrót do rejestracji',
     sonido_activar: 'Dotknij, aby aktywować alert dźwiękowy',
     sonido_activo: '✓ Alert dźwiękowy aktywowany',
@@ -527,6 +556,8 @@ const T = {
     prefix: '+49',
     btn_recibo: 'Erklärungsbeleg herunterladen',
     decl_titulo_lang: 'Erklärung (Deutsch)',
+    btn_wa: 'Anmeldung per WhatsApp bestätigen',
+    wa_activado: 'Sie erhalten Updates per WhatsApp',
     btn_volver: '← Zurück zur Anmeldung',
     sonido_activar: 'Tippen Sie, um den Tonalarm zu aktivieren',
     sonido_activo: '✓ Tonalarm aktiviert',
@@ -567,6 +598,8 @@ const T = {
     prefix: '+370',
     btn_recibo: 'Atsisiųsti deklaracijos kvitą',
     decl_titulo_lang: 'Deklaracija (Lietuvių)',
+    btn_wa: 'Patvirtinkite registraciją per WhatsApp',
+    wa_activado: 'Gausite atnaujinimus per WhatsApp',
     btn_volver: '← Grįžti į registraciją',
     sonido_activar: 'Palieskite, kad suaktyvintumėte garso įspėjimą',
     sonido_activo: '✓ Garso įspėjimas suaktyvintas',
@@ -607,6 +640,8 @@ const T = {
     prefix: '+7',
     btn_recibo: 'Скачать квитанцию декларации',
     decl_titulo_lang: 'Декларация (Русский)',
+    btn_wa: 'Подтвердить регистрацию через WhatsApp',
+    wa_activado: 'Вы будете получать уведомления через WhatsApp',
     btn_volver: '← Вернуться к регистрации',
     sonido_activar: 'Нажмите для активации звукового оповещения',
     sonido_activo: '✓ Звуковое оповещение активировано',
@@ -647,6 +682,8 @@ const T = {
     prefix: '+39',
     btn_recibo: 'Scarica la ricevuta della dichiarazione',
     decl_titulo_lang: 'Dichiarazione (Italiano)',
+    btn_wa: 'Conferma registrazione via WhatsApp',
+    wa_activado: 'Riceverai aggiornamenti tramite WhatsApp',
     btn_volver: '← Torna alla registrazione',
     sonido_activar: 'Tocca per attivare l\'avviso sonoro',
     sonido_activo: '✓ Avviso sonoro attivato',
@@ -684,7 +721,8 @@ function setLang(lang) {
   if (t.decl_check)    document.getElementById('decl-check-label').textContent  = t.decl_check;
   if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
   if (t.btn_recibo)    document.getElementById('btn-recibo-txt').textContent     = t.btn_recibo;
-  if (t.btn_volver)    document.getElementById('btn-volver').textContent           = t.btn_volver;
+  if (t.btn_volver) document.getElementById('btn-volver').textContent = t.btn_volver;
+  if (t.btn_wa) { var bwa = document.getElementById('btn-wa-txt'); if(bwa) bwa.textContent = t.btn_wa; }
   if (!sonidoListo && t.sonido_activar) {
     var bst = document.getElementById('btn-sonido-txt');
     if (bst) bst.textContent = t.sonido_activar;
@@ -780,6 +818,14 @@ async function registrar() {
     document.getElementById('estado-mat-top').textContent  = mat;
     document.getElementById('estado-titulo').textContent   = t.esperando_titulo;
     document.getElementById('estado-desc').textContent     = t.esperando_desc;
+    var instrEl = document.getElementById('instruccion-pantalla');
+    if (instrEl) instrEl.style.display = 'flex';
+    // Mostrar botón WhatsApp
+    var waWrap = document.getElementById('whatsapp-wrap');
+    if (waWrap) waWrap.style.display = 'block';
+    // Guardar matrícula y teléfono para el mensaje WhatsApp
+    window._waMat = mat;
+    window._waTel = telefono;
 
     // Mostrar botón de recibo SIEMPRE
     document.getElementById('btn-recibo').style.display = 'flex';
@@ -797,8 +843,10 @@ async function registrar() {
       document.getElementById('btn-push-wrap').style.display = 'block';
       document.getElementById('_push_id').value = despachoId;
     }
-    // Mantener pantalla encendida mientras espera
+    // WakeLock automático sin botón
     activarWakeLock();
+    var btnWake = document.getElementById('btn-wake');
+    if (btnWake) btnWake.style.display = 'none';
 
   } catch(e) {
     console.error('Error registro:', e);
@@ -946,8 +994,16 @@ function actualizarPantalla(despacho) {
   const mat = document.getElementById('estado-mat-top').textContent;
   sonar(mat, c);
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-  // Flash visual en iOS (donde vibrate no existe)
   flashPantalla();
+  var tOrig = document.title;
+  var iconosT = {'verde':'✅','naranja':'⏳','rojo-10':'🔴','rojo-12':'🔴','rojo-14':'🔴'};
+  var icoT = iconosT[c] || '🚛';
+  var nT = 0;
+  var animT = setInterval(function() {
+    document.title = nT % 2 === 0 ? icoT + ' RESULTADO LISTO' : tOrig;
+    nT++;
+    if (nT >= 10) { clearInterval(animT); document.title = tOrig; }
+  }, 700);
 }
 
 // ── RECUPERAR ESTADO ──
@@ -1202,6 +1258,9 @@ function descargarRecibo() {
 .declaracion-check:hover{background:#f4f2ee}
 .declaracion-check input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;accent-color:#1a1816;cursor:pointer}
 .declaracion-check-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#1a1816;line-height:1.3;letter-spacing:.02em}
+.btn-whatsapp{width:100%;margin-top:10px;padding:14px;background:#25d366;color:#fff;border:none;border-radius:8px;font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s}
+.btn-whatsapp:hover{background:#128c7e}
+.btn-whatsapp:active{transform:scale(.99)}
 .recibo-btn{width:100%;margin-top:10px;padding:13px;background:#1a1816;color:#fff;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
 .recibo-btn:hover{background:#333}
 .hash-tag{font-family:'Courier New',monospace;font-size:9px;color:#8a8480;word-break:break-all;padding:6px 10px;background:#f4f2ee;border-radius:4px;border:1px solid #dedad2}
@@ -1413,6 +1472,31 @@ function actualizarBtnWake(activo) {
     btn.style.borderColor = '#22c55e';
     btn.textContent = '📱 Pantalla activa';
   }
+}
+
+// ── WHATSAPP ACTIVACIÓN ──
+// NÚMERO DE WHATSAPP BUSINESS - sustituir cuando esté activado
+var WA_NUMERO = '34XXXXXXXXX'; // Ej: 34612000000 (sin + ni espacios)
+
+function abrirWhatsApp() {
+  var mat  = window._waMat || '';
+  var t    = T[idiomaActual];
+  var msg  = encodeURIComponent(
+    'Hola, acabo de registrar mi entrada en Aduana Customs Way. ' +
+    'Matrícula: ' + mat + '. ' +
+    'Por favor, avísenme cuando mi despacho esté listo.'
+  );
+  var url  = 'https://wa.me/' + WA_NUMERO + '?text=' + msg;
+  window.open(url, '_blank');
+  // Marcar como activado
+  var btn = document.getElementById('btn-whatsapp');
+  if (btn) {
+    btn.style.background = '#128c7e';
+    btn.textContent = '✓ WhatsApp activado';
+    btn.onclick = null;
+  }
+  var hint = document.getElementById('txt-wa-hint');
+  if (hint) hint.textContent = t.wa_activado || 'Recibirás los avisos de tu despacho por WhatsApp';
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
