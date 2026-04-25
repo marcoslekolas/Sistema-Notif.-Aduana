@@ -662,6 +662,17 @@ function llamarMostrador(id, mat) {
     });
 }
 
+function enviarTelegram(chat_id, matricula, circuito) {
+  fetch(TG_FN_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + ANON_KEY,
+    },
+    body: JSON.stringify({ chat_id: chat_id, matricula: matricula, circuito: circuito }),
+  }).catch(function() {});
+}
+
 function enviarTelegramMostrador(chat_id, matricula) {
   fetch(TG_FN_URL, {
     method: 'POST',
