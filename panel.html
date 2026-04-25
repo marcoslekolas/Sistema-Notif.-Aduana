@@ -317,6 +317,9 @@ function renderTabla(list, conAcc) {
   list.forEach(function(r) {
     var hora = new Date(r.hora_entrada).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
     var bi   = badgeInfo(r.circuito);
+    var mostradorTag = r.mensaje_mostrador
+      ? '<span style="display:inline-flex;align-items:center;font-family:var(--narrow);font-size:9px;font-weight:700;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:3px;padding:1px 6px;margin-left:5px;letter-spacing:.04em">📢 MOSTRADOR</span>'
+      : '';
     var biPrev = r.circuito_previo ? badgeInfo(r.circuito_previo) : null;
     var prevTag = biPrev ? '<span class="badge ' + biPrev.cls + '" style="opacity:.45;font-size:10px;padding:2px 7px;margin-left:4px" title="Circuito anterior">' + biPrev.lbl + '</span>' : '';
     var arch = r.archivado ? 'archivada' : '';
@@ -368,7 +371,7 @@ function renderTabla(list, conAcc) {
       + '<td class="td-mat">' + r.matricula + nuevo + declTag + '</td>'
       + '<td class="td-tel">' + r.telefono + '</td>'
       + '<td class="td-hora">' + hora + '</td>'
-      + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + timer + viendo + '</td>'
+      + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + mostradorTag + timer + viendo + '</td>'
       + (conAcc ? '<td>' + acc + '</td>' : '')
       + '</tr>';
   });

@@ -850,8 +850,25 @@ async function registrar() {
     if (instrEl) instrEl.style.display = 'flex';
     // Mostrar botón WhatsApp
     window._tgMat = mat;
-    // Abrir Telegram automáticamente - un solo toque
-    setTimeout(function() { abrirTelegram(); }, 500);
+    // Abrir Telegram y volver al formulario limpio
+    setTimeout(function() {
+      abrirTelegram();
+      // Resetear formulario tras 1.5s para volver al inicio
+      setTimeout(function() {
+        // Limpiar campos
+        document.getElementById('inp-mat').value = '';
+        document.getElementById('inp-tel').value = '';
+        document.getElementById('chk-declaracion').checked = false;
+        document.getElementById('form-err').style.display = 'none';
+        // Ocultar pantalla de estado y mostrar formulario
+        document.getElementById('screen-estado').style.display = 'none';
+        document.getElementById('screen-form').style.display   = 'block';
+        document.getElementById('lang-bar').style.display      = 'flex';
+        // Resetear variables
+        despachoId = null;
+        window._tgMat = null;
+      }, 1500);
+    }, 500);
 
     // Mostrar botón de recibo SIEMPRE
     document.getElementById('btn-recibo').style.display = 'flex';
@@ -1551,17 +1568,9 @@ var TG_BOT = 'CustomsWayAduana_bot';
 
 function abrirTelegram() {
   var mat = window._tgMat || '';
-  var t   = T[idiomaActual];
-  var url = 'https://t.me/' + TG_BOT + '?start=' + encodeURIComponent(mat);
-  window.open(url, '_blank');
-  var btn = document.getElementById('btn-telegram');
-  if (btn) {
-    btn.style.background = '#1a8ab5';
-    btn.textContent = '✓ Telegram activado';
-    btn.onclick = null;
-  }
-  var hint = document.getElementById('txt-tg-hint');
-  if (hint) hint.textContent = t.tg_activado || 'Recibirás los avisos de tu despacho por Telegram';
+  // tg:// abre directamente la app sin pasar por el navegador
+  var url = 'tg://resolve?domain=' + TG_BOT + '&start=' + encodeURIComponent(mat);
+  window.location.href = url;
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
