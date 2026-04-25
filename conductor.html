@@ -1568,9 +1568,12 @@ var TG_BOT = 'CustomsWayAduana_bot';
 
 function abrirTelegram() {
   var mat = window._tgMat || '';
-  // tg:// abre directamente la app sin pasar por el navegador
-  var url = 'tg://resolve?domain=' + TG_BOT + '&start=' + encodeURIComponent(mat);
-  window.location.href = url;
+  // En móvil https://t.me abre directamente la app sin diálogo
+  var url = 'https://t.me/' + TG_BOT + '?start=' + encodeURIComponent(mat);
+  // Abrir en nueva pestaña para no perder la página actual
+  var win = window.open(url, '_blank');
+  // Si el navegador bloquea window.open, redirigir directamente
+  if (!win) window.location.href = url;
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
