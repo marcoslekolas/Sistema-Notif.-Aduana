@@ -515,6 +515,102 @@ function mostrarError(msg) {
   e.textContent = msg; e.style.display = 'block';
 }
 
+// ── REGISTRAR CONDUCTOR ──
+async function registrar() {
+  const t   = T[idiomaActual];
+  const mat = document.getElementById('inp-mat').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  // Normalizar teléfono: aceptar autocompletado con +34, 0034, etc.
+  const telRaw = document.getElementById('inp-tel').value.trim();
+  const telNum = telRaw.replace(/[^0-9]/g,'');
+  // Si tiene prefijo incluido (más de 9 dígitos), usarlo tal cual; si no, añadir prefijo del idioma
+  const telefono = telNum.length > 9
+    ? '+' + telNum
+    : T[idiomaActual].prefix + telNum;
+
+  if (mat.length < 4)    { mostrarError(t.err_mat); return; }
+  if (telNum.length < 7) { mostrarError(t.err_tel); return; }
+  if (!document.getElementById('chk-declaracion').checked) {
+    mostrarError(t.err_decl || 'Debe aceptar la declaración para continuar.');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const horaDecl = new Date().toISOString();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/despachos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        matricula: mat,
+        telefono: telefono,
+        hora_entrada: horaDecl,
+        declaracion_aceptada: true,
+        hora_declaracion: horaDecl
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+
+    const data = await res.json();
+    despachoId = data[0]?.id;
+    if (!despachoId) throw new Error('Sin ID');
+
+    // Enriquecer con IP y hash en segundo plano
+    obtenerIP().then(ip => {
+      calcularHash({matricula: mat, telefono, hora_declaracion: horaDecl, ip_conductor: ip}).then(h => {
+        fetch(`${SUPABASE_URL}/rest/v1/despachos?id=eq.${despachoId}`, {
+          method: 'PATCH',
+          headers: {'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':`Bearer ${ANON_KEY}`},
+          body: JSON.stringify({ip_conductor: ip, hash_registro: h})
+        }).catch(()=>{});
+      });
+    });
+
+    // Ocultar formulario y mostrar pantalla de espera
+    document.getElementById('lang-bar').style.display    = 'none';
+    document.getElementById('screen-form').style.display = 'none';
+    document.getElementById('screen-estado').style.display = 'block';
+    document.getElementById('estado-mat-top').textContent = mat;
+
+    // Mensaje confirmación
+    const confirmEl = document.getElementById('registro-confirmado');
+    if (confirmEl) {
+      confirmEl.textContent = t.registro_confirmado || '✓ Registro de entrada confirmado · Sus trámites darán comienzo en breve';
+      confirmEl.style.display = 'block';
+    }
+
+    // Botón recibo
+    document.getElementById('btn-recibo').style.display = 'flex';
+    if (t.btn_recibo) document.getElementById('btn-recibo-txt').textContent = t.btn_recibo;
+
+    // Iniciar polling
+    suscribirEstado(despachoId);
+
+    // Abrir Telegram automáticamente
+    window._tgMat = mat;
+    abrirTelegram();
+
+    // WakeLock
+    activarWakeLock();
+    var btnWake = document.getElementById('btn-wake');
+    if (btnWake) btnWake.style.display = 'none';
+
+  } catch(e) {
+    mostrarError((t.err_gen || 'Error al registrar') + (e.message ? ': ' + e.message : ''));
+  } finally {
+    setLoading(false);
+  }
+}
+
 function setLoading(on) {
   document.getElementById('btn-reg').disabled = on;
   document.getElementById('spinner').style.display = on ? 'block' : 'none';
