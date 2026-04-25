@@ -261,9 +261,32 @@ sb.channel('panel-rt')
   .on('postgres_changes', {event:'*', schema:'public', table:'despachos'}, function() {
     if (tabActual === 'hoy') load();
   })
-  .subscribe();
+  .subscribe(function(status) {
+    var dot = document.querySelector('.ldot');
+    if (status === 'SUBSCRIBED') {
+      if (dot) dot.style.background = '#4ade80';
+    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+      if (dot) dot.style.background = '#f87171';
+    }
+  });
 
 load();
+
+// Polling de respaldo cada 15 segundos por si Realtime falla
+var _lastCount = 0;
+setInterval(function() {
+  if (tabActual !== 'hoy') return;
+  var hoy = new Date().toISOString().split('T')[0];
+  sb.from('despachos').select('id', {count: 'exact', head: true})
+    .gte('hora_entrada', hoy + 'T00:00:00')
+    .then(function(res) {
+      var count = res.count || 0;
+      if (count !== _lastCount) {
+        _lastCount = count;
+        load();
+      }
+    });
+}, 15000);
 
 setInterval(function() {
   if (tabActual === 'hoy') actualizarTimers();
