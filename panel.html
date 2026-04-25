@@ -729,8 +729,7 @@ function generarJustificanteHTML(lista, esExportacion) {
     ? 'Registro de Declaraciones Aduaneras · ' + hoy
     : 'Justificante de Declaración · ' + lista[0].matricula + ' · Ref. ' + (lista[0].id ? lista[0].id.replace(/-/g,'').substring(0,8).toUpperCase() : '');
 
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBmMWYzZCIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IndoaXRlIj5DVzwvdGV4dD48L3N2Zz4=">'
+  var html = '<!DOCTYPE html><html><head><meta charset=\'UTF-8\'>'
     + '<style>'
     + 'body{font-family:Arial,sans-serif;max-width:950px;margin:30px auto;padding:20px;color:#1a1816}'
     + '.header{border-bottom:3px solid #1a1816;padding-bottom:16px;margin-bottom:24px}'
