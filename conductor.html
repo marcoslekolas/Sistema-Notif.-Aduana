@@ -163,7 +163,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <input type="tel" id="inp-tel" placeholder="612 000 000"
         maxlength="13" autocomplete="tel" inputmode="tel" class="tel-input">
     </div>
-    <div class="field-hint" id="hint-tel">Campo opcional · Solo a efectos de comunicaciones sobre este despacho</div>
+    <div class="field-hint" id="hint-tel">Necesario para recibir avisos sobre su despacho</div>
   </div>
 
   <div class="declaracion-box" id="declaracion-box">
@@ -183,6 +183,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
   <div class="link-recover" id="link-recover-wrap">
     <button onclick="toggleRecover()" id="btn-recover-link">¿Ya te registraste antes y cerraste la página?</button>
+  </div>
+
+  <div style="margin-top:10px;text-align:center">
+    <button onclick="guardarFavorito()" id="btn-favorito" style="background:none;border:none;color:var(--muted);font-family:var(--narrow);font-size:13px;font-weight:600;cursor:pointer;padding:6px;text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;gap:6px">
+      &#9733; <span id="txt-favorito">Guardar en favoritos para próximas visitas</span>
+    </button>
   </div>
 
   <div class="recover-box" id="recover-box">
@@ -208,6 +214,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 
   <div class="estado-card waiting" id="estado-card">
+    <div id="registro-confirmado" style="display:none;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:8px;padding:10px 14px;font-family:var(--narrow);font-size:13px;font-weight:700;color:#22c55e;margin-bottom:16px;letter-spacing:.02em"></div>
     <span class="estado-icon" id="estado-icon">⏳</span>
     <div class="estado-titulo" id="estado-titulo"></div>
     <div class="estado-desc"   id="estado-desc"></div>
@@ -295,7 +302,7 @@ const T = {
     err_decl: 'Debe aceptar la declaración de disponibilidad de la mercancía para continuar.',
     decl_texto: 'El firmante declara que la mercancía amparada en el presente registro se encuentra físicamente presente en el recinto aduanero y queda a disposición de las autoridades aduaneras para su reconocimiento y control, de conformidad con el art. 139 del Reglamento (UE) n.º 952/2013 (Código Aduanero de la Unión).',
     decl_check: 'Acepto y declaro la disponibilidad de la mercancía',
-    hint_tel_new: 'Campo opcional · Solo a efectos de comunicaciones sobre este despacho',
+    hint_tel_new: 'Necesario para recibir avisos sobre su despacho',
     naranja_rec: 'Actualización: tu trámite continúa pendiente de autorización del técnico de aduanas. Tiempo en espera: {min} min.',
     lbl_recover: 'Consultar estado por matrícula',
     recover_link: '¿Ya te registraste antes y cerraste la página?',
@@ -304,8 +311,9 @@ const T = {
     prefix: '+34',
     btn_recibo: 'Descargar justificante de declaración',
     decl_titulo_lang: 'Declaración (Español)',
-    btn_wa: 'Confirmar registro por WhatsApp',
-    wa_activado: 'Recibirás los avisos de tu despacho por WhatsApp',
+    registro_confirmado: '✓ Registro de entrada confirmado · Sus trámites darán comienzo en breve',
+    btn_tg: 'Activar avisos por Telegram',
+    tg_activado: 'Recibirás los avisos de tu despacho por Telegram',
     btn_volver: '← Volver al registro',
     sonido_activar: 'Toca para activar alerta sonora',
     sonido_activo: '✓ Alerta sonora activada',
@@ -337,7 +345,7 @@ const T = {
     err_decl: 'You must accept the goods availability declaration to proceed.',
     decl_texto: 'The undersigned declares that the goods covered by this registration are physically present in the customs premises and available to the customs authorities for examination and control, in accordance with Article 139 of Regulation (EU) No 952/2013 (Union Customs Code).',
     decl_check: 'I accept and declare the availability of the goods',
-    hint_tel_new: 'Optional · For communications related to this customs clearance only',
+    hint_tel_new: 'Required to receive updates about your clearance',
     naranja_rec: 'Update: your clearance is still pending customs officer authorisation. Waiting time: {min} min.',
     lbl_recover: 'Check status by plate number',
     recover_link: 'Already registered but closed the page?',
@@ -346,8 +354,9 @@ const T = {
     prefix: '+44',
     btn_recibo: 'Download declaration receipt',
     decl_titulo_lang: 'Declaration (English)',
-    btn_wa: 'Confirm registration via WhatsApp',
-    wa_activado: 'You will receive clearance updates via WhatsApp',
+    registro_confirmado: '✓ Entry registration confirmed · Your clearance process will begin shortly',
+    btn_tg: 'Activate Telegram notifications',
+    tg_activado: 'You will receive clearance updates via Telegram',
     btn_volver: '← Back to registration',
     sonido_activar: 'Tap to activate sound alert',
     sonido_activo: '✓ Sound alert activated',
@@ -379,7 +388,7 @@ const T = {
     err_decl: 'Vous devez accepter la déclaration de disponibilité des marchandises pour continuer.',
     decl_texto: 'Le soussigné déclare que les marchandises visées par le présent enregistrement sont physiquement présentes dans l\'enceinte douanière et sont à la disposition des autorités douanières pour leur examen et contrôle, conformément à l\'article 139 du règlement (UE) n° 952/2013 (Code des douanes de l\'Union).',
     decl_check: 'J\'accepte et déclare la disponibilité des marchandises',
-    hint_tel_new: 'Optionnel · Uniquement pour les communications liées à ce dédouanement',
+    hint_tel_new: 'Nécessaire pour recevoir des mises à jour sur votre dédouanement',
     naranja_rec: 'Mise à jour : votre dédouanement est toujours en attente d\'autorisation. Temps d\'attente : {min} min.',
     lbl_recover: 'Consulter l\'état par immatriculation',
     recover_link: 'Déjà enregistré mais page fermée ?',
@@ -388,8 +397,9 @@ const T = {
     prefix: '+33',
     btn_recibo: 'Télécharger le justificatif de déclaration',
     decl_titulo_lang: 'Déclaration (Français)',
-    btn_wa: 'Confirmer l\'enregistrement par WhatsApp',
-    wa_activado: 'Vous recevrez les mises à jour par WhatsApp',
+    registro_confirmado: '✓ Enregistrement confirmé · Vos formalités vont débuter prochainement',
+    btn_tg: 'Activer les notifications Telegram',
+    tg_activado: 'Vous recevrez les mises à jour par Telegram',
     btn_volver: '← Retour à l\'enregistrement',
     sonido_activar: 'Appuyez pour activer l\'alerte sonore',
     sonido_activo: '✓ Alerte sonore activée',
@@ -421,7 +431,7 @@ const T = {
     err_decl: 'Deve aceitar a declaração de disponibilidade das mercadorias para continuar.',
     decl_texto: 'O abaixo assinado declara que as mercadorias abrangidas por este registo estão fisicamente presentes no recinto aduaneiro e à disposição das autoridades aduaneiras para exame e controlo, nos termos do artigo 139.º do Regulamento (UE) n.º 952/2013 (Código Aduaneiro da União).',
     decl_check: 'Aceito e declaro a disponibilidade das mercadorias',
-    hint_tel_new: 'Opcional · Apenas para comunicações relacionadas com este despacho',
+    hint_tel_new: 'Necessário para receber avisos sobre o seu despacho',
     naranja_rec: 'Atualização: o seu despacho continua pendente de autorização. Tempo de espera: {min} min.',
     lbl_recover: 'Consultar estado por matrícula',
     recover_link: 'Já se registou mas fechou a página?',
@@ -430,8 +440,9 @@ const T = {
     prefix: '+351',
     btn_recibo: 'Descarregar justificativo de declaração',
     decl_titulo_lang: 'Declaração (Português)',
-    btn_wa: 'Confirmar registo via WhatsApp',
-    wa_activado: 'Receberá as atualizações do despacho por WhatsApp',
+    registro_confirmado: '✓ Registo de entrada confirmado · O seu despacho terá início em breve',
+    btn_tg: 'Ativar notificações Telegram',
+    tg_activado: 'Receberá as atualizações do despacho por Telegram',
     btn_volver: '← Voltar ao registo',
     sonido_activar: 'Toque para ativar alerta sonora',
     sonido_activo: '✓ Alerta sonora ativada',
@@ -463,7 +474,7 @@ const T = {
     err_decl: 'Trebuie să acceptați declarația de disponibilitate a mărfurilor pentru a continua.',
     decl_texto: 'Subsemnatul declară că mărfurile acoperite de această înregistrare sunt prezente fizic în incinta vamală și sunt la dispoziția autorităților vamale pentru examinare și control, în conformitate cu articolul 139 din Regulamentul (UE) nr. 952/2013 (Codul vamal al Uniunii).',
     decl_check: 'Accept și declar disponibilitatea mărfurilor',
-    hint_tel_new: 'Opțional · Doar pentru comunicări legate de această vămuire',
+    hint_tel_new: 'Necesar pentru a primi notificări despre vămuirea dvs.',
     naranja_rec: 'Actualizare: vămuirea este în continuare în așteptare. Timp de așteptare: {min} min.',
     lbl_recover: 'Verificați starea după numărul de înmatriculare',
     recover_link: 'V-ați înregistrat deja dar ați închis pagina?',
@@ -472,8 +483,9 @@ const T = {
     prefix: '+40',
     btn_recibo: 'Descărcați dovada declarației',
     decl_titulo_lang: 'Declarație (Română)',
-    btn_wa: 'Confirmați înregistrarea prin WhatsApp',
-    wa_activado: 'Veți primi actualizări prin WhatsApp',
+    registro_confirmado: '✓ Înregistrare confirmată · Procedurile dvs. vor începe în curând',
+    btn_tg: 'Activați notificările Telegram',
+    tg_activado: 'Veți primi actualizări prin Telegram',
     btn_volver: '← Înapoi la înregistrare',
     sonido_activar: 'Atingeți pentru a activa alerta sonoră',
     sonido_activo: '✓ Alertă sonoră activată',
@@ -505,7 +517,7 @@ const T = {
     err_decl: 'Należy zaakceptować deklarację dostępności towarów, aby kontynuować.',
     decl_texto: 'Podpisany oświadcza, że towary objęte niniejszą rejestracją są fizycznie obecne na terenie urzędu celnego i pozostają do dyspozycji organów celnych w celu kontroli, zgodnie z art. 139 rozporządzenia (UE) nr 952/2013 (Unijny Kodeks Celny).',
     decl_check: 'Akceptuję i oświadczam dostępność towarów',
-    hint_tel_new: 'Opcjonalne · Wyłącznie do komunikacji związanej z tą odprawą',
+    hint_tel_new: 'Wymagane do otrzymywania powiadomień o odprawie',
     naranja_rec: 'Aktualizacja: odprawa nadal oczekuje na autoryzację. Czas oczekiwania: {min} min.',
     lbl_recover: 'Sprawdź status po numerze rejestracyjnym',
     recover_link: 'Już się zarejestrowałeś, ale zamknąłeś stronę?',
@@ -514,8 +526,9 @@ const T = {
     prefix: '+48',
     btn_recibo: 'Pobierz potwierdzenie deklaracji',
     decl_titulo_lang: 'Deklaracja (Polski)',
-    btn_wa: 'Potwierdź rejestrację przez WhatsApp',
-    wa_activado: 'Otrzymasz aktualizacje przez WhatsApp',
+    registro_confirmado: '✓ Rejestracja potwierdzona · Twoja odprawa rozpocznie się wkrótce',
+    btn_tg: 'Aktywuj powiadomienia Telegram',
+    tg_activado: 'Otrzymasz aktualizacje przez Telegram',
     btn_volver: '← Powrót do rejestracji',
     sonido_activar: 'Dotknij, aby aktywować alert dźwiękowy',
     sonido_activo: '✓ Alert dźwiękowy aktywowany',
@@ -547,7 +560,7 @@ const T = {
     err_decl: 'Sie müssen die Verfügbarkeitserklärung der Waren akzeptieren, um fortzufahren.',
     decl_texto: 'Der Unterzeichner erklärt, dass die in dieser Anmeldung erfassten Waren physisch in der Zollstelle vorhanden und den Zollbehörden zur Prüfung und Kontrolle gemäß Artikel 139 der Verordnung (EU) Nr. 952/2013 (Unionszollkodex) zur Verfügung stehen.',
     decl_check: 'Ich akzeptiere und erkläre die Verfügbarkeit der Waren',
-    hint_tel_new: 'Optional · Nur für Kommunikation im Zusammenhang mit dieser Zollabfertigung',
+    hint_tel_new: 'Erforderlich für Benachrichtigungen zu Ihrer Zollabfertigung',
     naranja_rec: 'Aktualisierung: Abfertigung wartet weiterhin auf Genehmigung. Wartezeit: {min} Min.',
     lbl_recover: 'Status per Kennzeichen abfragen',
     recover_link: 'Bereits registriert, aber Seite geschlossen?',
@@ -556,8 +569,9 @@ const T = {
     prefix: '+49',
     btn_recibo: 'Erklärungsbeleg herunterladen',
     decl_titulo_lang: 'Erklärung (Deutsch)',
-    btn_wa: 'Anmeldung per WhatsApp bestätigen',
-    wa_activado: 'Sie erhalten Updates per WhatsApp',
+    registro_confirmado: '✓ Anmeldung bestätigt · Ihre Zollabfertigung beginnt in Kürze',
+    btn_tg: 'Telegram-Benachrichtigungen aktivieren',
+    tg_activado: 'Sie erhalten Updates per Telegram',
     btn_volver: '← Zurück zur Anmeldung',
     sonido_activar: 'Tippen Sie, um den Tonalarm zu aktivieren',
     sonido_activo: '✓ Tonalarm aktiviert',
@@ -589,7 +603,7 @@ const T = {
     err_decl: 'Norėdami tęsti, turite priimti prekių prieinamumo deklaraciją.',
     decl_texto: 'Pasirašantysis pareiškia, kad šioje registracijoje nurodytos prekės fiziškai yra muitinės teritorijoje ir yra prieinamos muitinės institucijoms patikrinimui pagal Reglamento (ES) Nr. 952/2013 (Sąjungos muitinės kodeksas) 139 straipsnį.',
     decl_check: 'Sutinku ir pareiškiu prekių prieinamumą',
-    hint_tel_new: 'Neprivaloma · Tik ryšiams, susijusiems su šiuo muitiniu įforminimu',
+    hint_tel_new: 'Būtinas pranešimams apie jūsų muitinį įforminimą gauti',
     naranja_rec: 'Atnaujinimas: įforminimas vis dar laukia patvirtinimo. Laukimo laikas: {min} min.',
     lbl_recover: 'Tikrinti būseną pagal numerį',
     recover_link: 'Jau užsiregistravote, bet uždarėte puslapį?',
@@ -598,8 +612,9 @@ const T = {
     prefix: '+370',
     btn_recibo: 'Atsisiųsti deklaracijos kvitą',
     decl_titulo_lang: 'Deklaracija (Lietuvių)',
-    btn_wa: 'Patvirtinkite registraciją per WhatsApp',
-    wa_activado: 'Gausite atnaujinimus per WhatsApp',
+    registro_confirmado: '✓ Registracija patvirtinta · Jūsų muitinis įforminimas prasidės netrukus',
+    btn_tg: 'Aktyvuokite Telegram pranešimus',
+    tg_activado: 'Gausite atnaujinimus per Telegram',
     btn_volver: '← Grįžti į registraciją',
     sonido_activar: 'Palieskite, kad suaktyvintumėte garso įspėjimą',
     sonido_activo: '✓ Garso įspėjimas suaktyvintas',
@@ -631,7 +646,7 @@ const T = {
     err_decl: 'Необходимо принять декларацию о наличии товара для продолжения.',
     decl_texto: 'Нижеподписавшийся заявляет, что товары, охваченные данной регистрацией, физически присутствуют на таможенной территории и находятся в распоряжении таможенных органов для проверки и контроля в соответствии со статьёй 139 Регламента (ЕС) № 952/2013 (Таможенный кодекс Союза).',
     decl_check: 'Принимаю и заявляю о наличии товара',
-    hint_tel_new: 'Необязательно · Только для связи по данному таможенному оформлению',
+    hint_tel_new: 'Необходим для получения уведомлений об оформлении',
     naranja_rec: 'Обновление: оформление по-прежнему ожидает авторизации. Время ожидания: {min} мин.',
     lbl_recover: 'Проверить статус по номеру',
     recover_link: 'Уже зарегистрировались, но закрыли страницу?',
@@ -640,8 +655,9 @@ const T = {
     prefix: '+7',
     btn_recibo: 'Скачать квитанцию декларации',
     decl_titulo_lang: 'Декларация (Русский)',
-    btn_wa: 'Подтвердить регистрацию через WhatsApp',
-    wa_activado: 'Вы будете получать уведомления через WhatsApp',
+    registro_confirmado: '✓ Регистрация подтверждена · Ваше оформление начнётся в ближайшее время',
+    btn_tg: 'Активировать уведомления Telegram',
+    tg_activado: 'Вы будете получать уведомления через Telegram',
     btn_volver: '← Вернуться к регистрации',
     sonido_activar: 'Нажмите для активации звукового оповещения',
     sonido_activo: '✓ Звуковое оповещение активировано',
@@ -673,7 +689,7 @@ const T = {
     err_decl: 'È necessario accettare la dichiarazione di disponibilità delle merci per procedere.',
     decl_texto: 'Il sottoscritto dichiara che le merci oggetto della presente registrazione sono fisicamente presenti nel recinto doganale e a disposizione delle autorità doganali per l\'esame e il controllo, ai sensi dell\'articolo 139 del regolamento (UE) n. 952/2013 (Codice doganale dell\'Unione).',
     decl_check: 'Accetto e dichiaro la disponibilità delle merci',
-    hint_tel_new: 'Facoltativo · Solo per comunicazioni relative a questo sdoganamento',
+    hint_tel_new: 'Necessario per ricevere aggiornamenti sul suo sdoganamento',
     naranja_rec: 'Aggiornamento: sdoganamento ancora in attesa di autorizzazione. Tempo di attesa: {min} min.',
     lbl_recover: 'Controlla stato per targa',
     recover_link: 'Già registrato ma hai chiuso la pagina?',
@@ -682,8 +698,9 @@ const T = {
     prefix: '+39',
     btn_recibo: 'Scarica la ricevuta della dichiarazione',
     decl_titulo_lang: 'Dichiarazione (Italiano)',
-    btn_wa: 'Conferma registrazione via WhatsApp',
-    wa_activado: 'Riceverai aggiornamenti tramite WhatsApp',
+    registro_confirmado: '✓ Registrazione confermata · Le sue pratiche inizieranno a breve',
+    btn_tg: 'Attiva notifiche Telegram',
+    tg_activado: 'Riceverai aggiornamenti tramite Telegram',
     btn_volver: '← Torna alla registrazione',
     sonido_activar: 'Tocca per attivare l\'avviso sonoro',
     sonido_activo: '✓ Avviso sonoro attivato',
@@ -722,7 +739,7 @@ function setLang(lang) {
   if (t.hint_tel_new)  document.getElementById('hint-tel').textContent          = t.hint_tel_new;
   if (t.btn_recibo)    document.getElementById('btn-recibo-txt').textContent     = t.btn_recibo;
   if (t.btn_volver) document.getElementById('btn-volver').textContent = t.btn_volver;
-  if (t.btn_wa) { var bwa = document.getElementById('btn-wa-txt'); if(bwa) bwa.textContent = t.btn_wa; }
+  if (t.btn_tg) { var btg = document.getElementById('btn-tg-txt'); if(btg) btg.textContent = t.btn_tg; }
   if (!sonidoListo && t.sonido_activar) {
     var bst = document.getElementById('btn-sonido-txt');
     if (bst) bst.textContent = t.sonido_activar;
@@ -778,7 +795,7 @@ async function registrar() {
   errEl.style.display = 'none';
 
   if (mat.length < 4) { mostrarError(t.err_mat); return; }
-  if (tel.length > 0 && tel.replace(/[^0-9]/g, '').length < 7) { mostrarError(t.err_tel); return; }
+  if (tel.replace(/[^0-9]/g, '').length < 7) { mostrarError(t.err_tel); return; }
   if (!document.getElementById('chk-declaracion').checked) {
     mostrarError(t.err_decl || 'Debe aceptar la declaración de disponibilidad de la mercancía para continuar.');
     return;
@@ -818,6 +835,12 @@ async function registrar() {
     document.getElementById('estado-mat-top').textContent  = mat;
     document.getElementById('estado-titulo').textContent   = t.esperando_titulo;
     document.getElementById('estado-desc').textContent     = t.esperando_desc;
+    // Mensaje de confirmación de registro
+    var confirmEl = document.getElementById('registro-confirmado');
+    if (confirmEl) {
+      confirmEl.textContent = t.registro_confirmado || '✓ Registro de entrada confirmado · Sus trámites darán comienzo en breve';
+      confirmEl.style.display = 'block';
+    }
     var instrEl = document.getElementById('instruccion-pantalla');
     if (instrEl) instrEl.style.display = 'flex';
     // Mostrar botón WhatsApp
@@ -1472,6 +1495,52 @@ function actualizarBtnWake(activo) {
     btn.style.borderColor = '#22c55e';
     btn.textContent = '📱 Pantalla activa';
   }
+}
+
+// ── GUARDAR EN FAVORITOS ──
+function guardarFavorito() {
+  var btn = document.getElementById('btn-favorito');
+  var txt = document.getElementById('txt-favorito');
+
+  // Intentar API nativa de favoritos (solo algunos navegadores)
+  if (window.sidebar && window.sidebar.addPanel) {
+    // Firefox antiguo
+    window.sidebar.addPanel(document.title, window.location.href, '');
+    if (txt) txt.textContent = '✓ Guardado en favoritos';
+    return;
+  }
+
+  // Para todos los demás: mostrar instrucción según dispositivo
+  var esIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  var esAndroid = /Android/.test(navigator.userAgent);
+  var esMac     = /Mac/.test(navigator.userAgent) && !esIOS;
+  var esWin     = /Win/.test(navigator.userAgent);
+
+  var instruccion = '';
+  if (esIOS) {
+    instruccion = 'En Safari: pulsa el botón compartir ⬆ → "Añadir a favoritos" o "Añadir a pantalla de inicio"';
+  } else if (esAndroid) {
+    instruccion = 'En Chrome: pulsa el menú ⋮ → "Añadir a favoritos" o "Añadir a pantalla de inicio"';
+  } else if (esMac) {
+    instruccion = 'Pulsa Cmd+D para guardar en favoritos';
+  } else if (esWin) {
+    instruccion = 'Pulsa Ctrl+D para guardar en favoritos';
+  } else {
+    instruccion = 'Usa Ctrl+D / Cmd+D para guardar en favoritos';
+  }
+
+  // Mostrar instrucción en pantalla
+  var div = document.getElementById('favorito-instruccion');
+  if (!div) {
+    div = document.createElement('div');
+    div.id = 'favorito-instruccion';
+    div.style.cssText = 'margin-top:8px;padding:10px 14px;background:#f4f2ee;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);line-height:1.5;text-align:left';
+    btn.parentElement.appendChild(div);
+  }
+  div.textContent = instruccion;
+  div.style.display = 'block';
+
+  if (txt) txt.textContent = '✓ Ver instrucciones abajo';
 }
 
 // ── WHATSAPP ACTIVACIÓN ──
