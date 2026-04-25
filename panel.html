@@ -100,6 +100,15 @@ td{padding:15px 16px;vertical-align:middle}
 .modal-btn .ml{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-top:1px}
 .modal-cancel{margin-top:12px;width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:background .12s}
 .modal-cancel:hover{background:var(--bg)}
+.log-btn{background:none;border:none;cursor:pointer;font-family:var(--narrow);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;transition:background .1s}
+.log-btn:hover{background:var(--border2);color:var(--text)}
+.log-panel{display:none;margin-top:6px;padding:8px 10px;background:#f8f7f4;border:1px solid var(--border2);border-radius:6px;font-family:var(--narrow);font-size:11px}
+.log-entry{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid var(--border2)}
+.log-entry:last-child{border-bottom:none}
+.log-hora{color:var(--muted);min-width:42px;font-size:10px}
+.log-campo{font-weight:700;min-width:60px}
+.log-arrow{color:var(--muted)}
+.log-val{color:var(--text)}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#f0ede6;font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.04em;padding:11px 18px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);transform:translateY(60px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);z-index:300;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}.toast.err{background:#991b1b}.toast.ok{background:#166534}
 </style>
@@ -392,7 +401,10 @@ function renderTabla(list, conAcc) {
     }
 
     html += '<tr class="' + arch + '" id="row-' + r.id + '">'
-      + '<td class="td-mat">' + r.matricula + nuevo + declTag + '</td>'
+      + '<td class="td-mat">' + r.matricula + nuevo + declTag
+        + '<button class="log-btn" onclick="toggleLog(\'' + r.id + '\')" title="Ver historial de cambios">📋</button>'
+        + '<div class="log-panel" id="log-' + r.id + '"><span style="color:var(--muted);font-size:11px">Cargando…</span></div>'
+        + '</td>'
       + '<td class="td-tel">' + r.telefono + '</td>'
       + '<td class="td-hora">' + hora + '</td>'
       + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + mostradorTag + timer + viendo + '</td>'
@@ -837,6 +849,61 @@ function generarJustificanteHTML(lista, esExportacion) {
   a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
   toast(esExportacion ? '⬇ ' + lista.length + ' declaraciones exportadas' : '⬇ Justificante de ' + lista[0].matricula, 'ok');
+}
+
+// ── LOG DE CAMBIOS ──
+function toggleLog(id) {
+  var panel = document.getElementById('log-' + id);
+  if (!panel) return;
+  if (panel.style.display === 'block') {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  cargarLog(id, panel);
+}
+
+function cargarLog(id, panel) {
+  sb.from('despachos_log')
+    .select('campo, valor_antes, valor_despues, momento')
+    .eq('despacho_id', id)
+    .order('momento', {ascending: true})
+    .then(function(res) {
+      if (res.error || !res.data || !res.data.length) {
+        panel.innerHTML = '<span style="color:var(--muted);font-size:11px">Sin cambios registrados</span>';
+        return;
+      }
+      var iconos = {
+        'circuito': '🔄',
+        'mostrador': '📢',
+        'archivado': '✓'
+      };
+      var labels = {
+        'verde': '✓ Verde',
+        'naranja': '⏳ Naranja',
+        'rojo-10': '🔴 Rojo 10h',
+        'rojo-12': '🔴 Rojo 12h',
+        'rojo-14': '🔴 Rojo 14h',
+        'true': 'Activado',
+        'false': 'Desactivado',
+        'null': '—',
+        '': '—',
+      };
+      var html = res.data.map(function(e) {
+        var hora  = new Date(e.momento).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+        var icono = iconos[e.campo] || '•';
+        var antes = labels[e.valor_antes || ''] || e.valor_antes || '—';
+        var despues = labels[e.valor_despues || ''] || e.valor_despues || '—';
+        return '<div class="log-entry">'
+          + '<span class="log-hora">' + hora + '</span>'
+          + '<span>' + icono + '</span>'
+          + '<span class="log-campo">' + e.campo + '</span>'
+          + '<span class="log-arrow">→</span>'
+          + '<span class="log-val">' + despues + '</span>'
+          + '</div>';
+      }).join('');
+      panel.innerHTML = html;
+    });
 }
 
 // ── TOAST ──
