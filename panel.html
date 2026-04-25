@@ -488,6 +488,16 @@ function resolver(id, tipo, mat) {
         toast('✓ ' + mat + (tipo==='naranja' ? ' autorizado' : ' inspeccionado') + ' y archivado', 'ok');
         var fila = document.getElementById('row-' + id);
         if (fila) { fila.classList.remove('fila-flash'); void fila.offsetWidth; fila.classList.add('fila-flash'); }
+        // Enviar Telegram al resolver
+        var filaRes = rows.find(function(r){ return r.id === id; });
+        if (filaRes && filaRes.telegram_chat_id) {
+          enviarTelegram(filaRes.telegram_chat_id, mat, 'verde');
+        } else {
+          sb.from('despachos').select('telegram_chat_id').eq('id', id).single()
+            .then(function(res2) {
+              if (res2.data && res2.data.telegram_chat_id) enviarTelegram(res2.data.telegram_chat_id, mat, 'verde');
+            });
+        }
       }
       if (snd) snd.classList.remove('show');
     });
