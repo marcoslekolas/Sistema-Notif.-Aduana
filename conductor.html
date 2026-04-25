@@ -850,25 +850,18 @@ async function registrar() {
     if (instrEl) instrEl.style.display = 'flex';
     // Mostrar botón WhatsApp
     window._tgMat = mat;
-    // Abrir Telegram y volver al formulario limpio
+    // Resetear formulario tras 2s para siguiente conductor
     setTimeout(function() {
-      abrirTelegram();
-      // Resetear formulario tras 1.5s para volver al inicio
-      setTimeout(function() {
-        // Limpiar campos
-        document.getElementById('inp-mat').value = '';
-        document.getElementById('inp-tel').value = '';
-        document.getElementById('chk-declaracion').checked = false;
-        document.getElementById('form-err').style.display = 'none';
-        // Ocultar pantalla de estado y mostrar formulario
-        document.getElementById('screen-estado').style.display = 'none';
-        document.getElementById('screen-form').style.display   = 'block';
-        document.getElementById('lang-bar').style.display      = 'flex';
-        // Resetear variables
-        despachoId = null;
-        window._tgMat = null;
-      }, 1500);
-    }, 500);
+      document.getElementById('inp-mat').value = '';
+      document.getElementById('inp-tel').value = '';
+      document.getElementById('chk-declaracion').checked = false;
+      document.getElementById('form-err').style.display = 'none';
+      document.getElementById('screen-estado').style.display = 'none';
+      document.getElementById('screen-form').style.display   = 'block';
+      document.getElementById('lang-bar').style.display      = 'flex';
+      despachoId = null;
+      window._tgMat = null;
+    }, 2000);
 
     // Mostrar botón de recibo SIEMPRE
     document.getElementById('btn-recibo').style.display = 'flex';
@@ -1567,13 +1560,9 @@ function guardarFavorito() {
 var TG_BOT = 'CustomsWayAduana_bot';
 
 function abrirTelegram() {
-  var mat = window._tgMat || '';
-  // En móvil https://t.me abre directamente la app sin diálogo
+  var mat = (window._tgMat || '').toUpperCase();
   var url = 'https://t.me/' + TG_BOT + '?start=' + encodeURIComponent(mat);
-  // Abrir en nueva pestaña para no perder la página actual
-  var win = window.open(url, '_blank');
-  // Si el navegador bloquea window.open, redirigir directamente
-  if (!win) window.location.href = url;
+  window.location.href = url;
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
