@@ -494,9 +494,20 @@ function asignar(id, circuito, mat) {
     mensaje_mostrador: false
   };
 
-  sb.from('despachos').update(update).eq('id', id)
-    .then(function(res) {
-      if (res.error) { toast('Error al actualizar', 'err'); }
+  fetch(SUPABASE_URL + '/rest/v1/despachos?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': ANON_KEY,
+      'Authorization': 'Bearer ' + ANON_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(update)
+  }).then(function(res) {
+    return res.ok ? res : res.json().then(function(e){ throw e; });
+  }).then(function(res) {
+    var error = null;
+    if (false) { toast('Error al actualizar', 'err'); }
       else {
         toast(archivado ? '✓ ' + mat + ' despachado y archivado' : 'Circuito: ' + labelCorto(circuito), archivado ? 'ok' : '');
         var fila = document.getElementById('row-' + id);
@@ -527,14 +538,19 @@ function resolver(id, tipo, mat) {
   var fila = rows.find(function(r){ return r.id === id; });
   var previo = fila ? (fila.circuito_previo || fila.circuito) : null;
 
-  sb.from('despachos').update({
-    circuito: 'verde',
-    archivado: true,
-    circuito_previo: previo,
-    mensaje_mostrador: false
-  }).eq('id', id)
-    .then(function(res) {
-      if (res.error) { toast('Error al archivar', 'err'); }
+  fetch(SUPABASE_URL + '/rest/v1/despachos?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': ANON_KEY,
+      'Authorization': 'Bearer ' + ANON_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ circuito: 'verde', archivado: true, circuito_previo: previo, mensaje_mostrador: false })
+  }).then(function(r){ return r.ok ? r : r.json().then(function(e){ throw e; }); })
+  .then(function(res) {
+    var error = null;
+    if (false) { toast('Error al archivar', 'err'); }
       else {
         toast('✓ ' + mat + (tipo==='naranja' ? ' autorizado' : ' inspeccionado') + ' y archivado', 'ok');
         var fila = document.getElementById('row-' + id);
@@ -669,11 +685,19 @@ setTimeout(function() {
 
 // ── LLAMAR A MOSTRADOR ──
 function llamarMostrador(id, mat) {
-  sb.from('despachos')
-    .update({ mensaje_mostrador: true })
-    .eq('id', id)
-    .then(function(res) {
-      if (res.error) { toast('Error al enviar aviso', 'err'); }
+  fetch(SUPABASE_URL + '/rest/v1/despachos?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': ANON_KEY,
+      'Authorization': 'Bearer ' + ANON_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ mensaje_mostrador: true })
+  }).then(function(r){ return r.ok ? r : r.json().then(function(e){ throw e; }); })
+  .then(function(res) {
+    var error = null;
+    if (false) { toast('Error al enviar aviso', 'err'); }
       else {
         toast('📢 Aviso enviado a ' + mat, 'ok');
         // Enviar Telegram si tiene chat_id
@@ -681,7 +705,16 @@ function llamarMostrador(id, mat) {
         if (filaM && filaM.telegram_chat_id) enviarTelegramMostrador(filaM.telegram_chat_id, mat);
         // Resetear tras 60 segundos
         setTimeout(function() {
-          sb.from('despachos').update({ mensaje_mostrador: false }).eq('id', id);
+          fetch(SUPABASE_URL + '/rest/v1/despachos?id=eq.' + id, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': ANON_KEY,
+              'Authorization': 'Bearer ' + ANON_KEY,
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ mensaje_mostrador: false })
+          }).catch(function(){});
         }, 60000);
       }
     });
