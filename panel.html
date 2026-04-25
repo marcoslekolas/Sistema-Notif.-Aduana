@@ -689,83 +689,117 @@ function exportarDeclaraciones() {
 
 // ── GENERAR HTML DE JUSTIFICANTE ──
 function generarJustificanteHTML(lista, esExportacion) {
-  var hoy = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  var hoy    = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
   var horaGen = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
   var filas = lista.map(function(r) {
     var horaDecl = r.hora_declaracion
-      ? new Date(r.hora_declaracion).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})
+      ? new Date(r.hora_declaracion).toLocaleString('es-ES',{
+          day:'2-digit',month:'2-digit',year:'numeric',
+          hour:'2-digit',minute:'2-digit',second:'2-digit',
+          timeZoneName:'short'
+        })
       : '—';
-    var hashCorto = r.hash_registro ? r.hash_registro.substring(0,32) + '…' : '—';
+    var ref = r.id ? r.id.replace(/-/g,'').substring(0,8).toUpperCase() : '—';
+
     return '<tr>'
-      + '<td style="padding:10px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:14px;font-weight:700">' + r.matricula + '</td>'
-      + '<td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px">' + (r.telefono || '—') + '</td>'
-      + '<td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px">' + horaDecl + '</td>'
-      + '<td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px">' + (r.ip_conductor || '—') + '</td>'
-      + '<td style="padding:10px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:10px;color:#666">' + hashCorto + '</td>'
-      + '<td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px;color:#15803d;font-weight:700">✓ Aceptada</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-family:monospace;font-size:15px;font-weight:700;color:#1a1816">' + r.matricula + '</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-family:monospace;font-size:14px;font-weight:700;color:#1d4ed8">' + ref + '</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-size:12px">' + horaDecl + '</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-size:12px">' + (r.telefono || '—') + '</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-size:12px">' + (r.ip_conductor || '—') + '</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-family:monospace;font-size:9px;color:#666;word-break:break-all">' + (r.hash_registro || '—') + '</td>'
+      + '<td style="padding:12px 14px;border-bottom:1px solid #eee;font-size:12px;color:#15803d;font-weight:700">✓ Aceptada</td>'
       + '</tr>';
   }).join('');
 
   var tituloDoc = esExportacion
     ? 'Registro de Declaraciones Aduaneras · ' + hoy
-    : 'Justificante de Declaración · ' + lista[0].matricula;
+    : 'Justificante de Declaración · ' + lista[0].matricula + ' · Ref. ' + (lista[0].id ? lista[0].id.replace(/-/g,'').substring(0,8).toUpperCase() : '');
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    + '<style>body{font-family:Arial,sans-serif;max-width:900px;margin:30px auto;padding:20px;color:#1a1816}'
-    + '.header{border-bottom:3px solid #1a1816;padding-bottom:14px;margin-bottom:20px}'
+    + '<style>'
+    + 'body{font-family:Arial,sans-serif;max-width:950px;margin:30px auto;padding:20px;color:#1a1816}'
+    + '.header{border-bottom:3px solid #1a1816;padding-bottom:16px;margin-bottom:24px}'
     + '.titulo{font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}'
     + '.sub{font-size:11px;color:#666;margin-top:4px}'
-    + 'table{width:100%;border-collapse:collapse;margin-top:16px}'
-    + 'thead th{background:#1a1816;color:#fff;padding:10px 12px;text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase}'
-    + 'tbody tr:hover{background:#f8f7f4}'
-    + '.decl-ref{margin-top:24px;padding:14px 16px;background:#f8f7f4;border-left:4px solid #1a1816;font-size:11px;color:#444;line-height:1.7}'
-    + '.footer{margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center}'
-    + '@media print{body{margin:10px}}'
+    + '.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;padding:14px;background:#f8f7f4;border-radius:6px}'
+    + '.meta-item{font-size:11px}'
+    + '.meta-label{font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;font-size:10px}'
+    + '.meta-val{font-size:13px;font-weight:600;color:#1a1816;margin-top:2px}'
+    + 'table{width:100%;border-collapse:collapse;margin-top:16px;font-size:12px}'
+    + 'thead th{background:#1a1816;color:#fff;padding:10px 14px;text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase}'
+    + 'tbody tr:nth-child(even){background:#f8f7f4}'
+    + '.decl-box{margin-top:24px;padding:16px 18px;background:#fff;border:1px solid #dedad2;border-left:4px solid #1a1816}'
+    + '.decl-titulo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:8px}'
+    + '.decl-texto{font-size:12px;line-height:1.7;color:#333}'
+    + '.validez{margin-top:20px;padding:14px 18px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px}'
+    + '.validez-titulo{font-size:10px;font-weight:700;text-transform:uppercase;color:#15803d;margin-bottom:6px}'
+    + '.validez-texto{font-size:11px;color:#166534;line-height:1.6}'
+    + '.footer{margin-top:24px;padding-top:14px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center}'
+    + '@media print{body{margin:10px}.no-print{display:none}}'
     + '</style></head><body>'
+
+    // Cabecera
     + '<div class="header">'
     + '<div class="titulo">' + tituloDoc + '</div>'
-    + '<div class="sub">Declaración de disponibilidad de mercancía · Art. 139 Reglamento (UE) n.º 952/2013 (CAU)</div>'
+    + '<div class="sub">Declaración de disponibilidad de mercancía · Art. 139 Reglamento (UE) n.º 952/2013 (Código Aduanero de la Unión)</div>'
     + '</div>'
+
+    // Metadatos del documento
+    + '<div class="meta">'
+    + '<div class="meta-item"><div class="meta-label">Fecha de generación</div><div class="meta-val">' + hoy + '</div></div>'
+    + '<div class="meta-item"><div class="meta-label">Hora de generación</div><div class="meta-val">' + horaGen + ' (hora local)</div></div>'
+    + '<div class="meta-item"><div class="meta-label">Registros incluidos</div><div class="meta-val">' + lista.length + '</div></div>'
+    + '<div class="meta-item"><div class="meta-label">Sistema</div><div class="meta-val">Customs-Way Aduana · aduana.customsway.eu</div></div>'
+    + '</div>'
+
+    // Tabla de registros
     + '<table><thead><tr>'
-    + '<th>Matrícula</th><th>Teléfono</th><th>Fecha y hora declaración</th><th>IP conductor</th><th>Hash SHA-256</th><th>Estado</th>'
+    + '<th>Matrícula</th><th>Ref. registro</th><th>Fecha y hora declaración</th>'
+    + '<th>Teléfono</th><th>IP dispositivo</th><th>Hash SHA-256</th><th>Estado</th>'
     + '</tr></thead><tbody>' + filas + '</tbody></table>'
-    + '<div class="decl-ref">'
-    + '<strong>Texto de la declaración aceptada:</strong><br><br>'
-    + 'El firmante declara que la mercancía amparada en el presente registro se encuentra físicamente presente en el recinto aduanero '
+
+    // Texto de la declaración
+    + '<div class="decl-box">'
+    + '<div class="decl-titulo">Texto íntegro de la declaración aceptada</div>'
+    + '<div class="decl-texto">El firmante declara que la mercancía amparada en el presente registro se encuentra físicamente presente en el recinto aduanero '
     + 'y queda a disposición de las autoridades aduaneras para su reconocimiento y control, de conformidad con el artículo 139 del '
-    + 'Reglamento (UE) n.º 952/2013 del Parlamento Europeo y del Consejo (Código Aduanero de la Unión).'
+    + 'Reglamento (UE) n.º 952/2013 del Parlamento Europeo y del Consejo, de 9 de octubre de 2013, por el que se establece el '
+    + 'Código Aduanero de la Unión.</div>'
     + '</div>'
-    + '<div class="footer">Documento generado el ' + hoy + ' a las ' + horaGen + ' · Sistema de Notificación de Despachos Aduaneros<br>'
-    + 'El hash SHA-256 permite verificar la integridad de cada registro en la base de datos del sistema.</div>'
+
+    // Valor probatorio
+    + '<div class="validez">'
+    + '<div class="validez-titulo">Valor probatorio y verificación de integridad</div>'
+    + '<div class="validez-texto">'
+    + '• La <strong>Referencia de registro</strong> (8 caracteres) identifica unívocamente cada declaración en la base de datos del sistema.<br>'
+    + '• El <strong>Hash SHA-256</strong> es la huella digital del conjunto de datos en el momento de la declaración. Cualquier alteración posterior del registro produce un hash diferente y detectable.<br>'
+    + '• La <strong>IP del dispositivo</strong> identifica el equipo desde el que se realizó la declaración.<br>'
+    + '• La <strong>fecha y hora</strong> están registradas en UTC con precisión de segundos en la base de datos de Supabase (PostgreSQL).<br>'
+    + '• Para verificar la integridad de un registro, solicite el extracto de la base de datos con el UUID completo correspondiente a la referencia indicada.'
+    + '</div>'
+    + '</div>'
+
+    + '<div class="footer">'
+    + 'Documento generado el ' + hoy + ' a las ' + horaGen + '<br>'
+    + 'Customs-Way Aduana · Sistema de Notificación de Despachos Aduaneros · aduana.customsway.eu<br>'
+    + 'Este documento tiene valor probatorio en virtud del registro electrónico con hash verificable almacenado en base de datos.'
+    + '</div>'
     + '</body></html>';
 
-  var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href   = url;
   var nombre = esExportacion
     ? 'declaraciones-aduana-' + new Date().toISOString().split('T')[0] + '.html'
-    : 'justificante-' + lista[0].matricula + '-' + new Date().toISOString().split('T')[0] + '.html';
+    : 'justificante-' + lista[0].matricula + '-' + (lista[0].id||'').replace(/-/g,'').substring(0,8).toUpperCase() + '.html';
   a.download = nombre;
   a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
   toast(esExportacion ? '⬇ ' + lista.length + ' declaraciones exportadas' : '⬇ Justificante de ' + lista[0].matricula, 'ok');
 }
-
-// ── ENVIAR TELEGRAM AL CONDUCTOR ──
-function enviarTelegram(chat_id, matricula, circuito) {
-  fetch(TG_FN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + ANON_KEY,
-    },
-    body: JSON.stringify({ chat_id: chat_id, matricula: matricula, circuito: circuito }),
-  }).catch(function() {});
-}
-
-
 
 // ── TOAST ──
 var toastTimer;
