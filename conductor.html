@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBmMWYzZCIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IndoaXRlIj5DVzwvdGV4dD48L3N2Zz4=">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Aduana · Estado de despacho</title>
 <link rel="manifest" href="manifest-conductor.json">
@@ -245,11 +246,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
   </div>
 
-  <div class="estado-footer" id="txt-footer">Recibirás un mensaje en Telegram cuando tu despacho esté listo</div>
-  <button id="btn-reabrir-tg" onclick="abrirTelegram()" style="margin-top:12px;width:100%;padding:12px;background:#229ED9;color:#fff;border:none;border-radius:8px;font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.032 9.571c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L6.9 14.507l-2.938-.917c-.637-.203-.65-.637.136-.943l11.47-4.42c.533-.194.998.131.994.021z"/></svg>
-    Reabrir Telegram
-  </button>
+  <div class="estado-footer" id="txt-footer">Sus trámites están siendo procesados · Le avisaremos por Telegram</div>
   <div id="telegram-wrap" style="display:none;margin-top:12px">
     <button id="btn-telegram" onclick="abrirTelegram()" style="width:100%;padding:14px;background:#229ED9;color:#fff;border:none;border-radius:8px;font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.032 9.571c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L6.9 14.507l-2.938-.917c-.637-.203-.65-.637.136-.943l11.47-4.42c.533-.194.998.131.994.021z"/></svg>
@@ -804,7 +801,6 @@ async function registrar() {
     return;
   }
 
-  // Normalizar: acepta autocompletado con +34, 0034, etc.
   const telNum = tel.replace(/[^0-9]/g, '');
   const telefono = telNum.length > 9 ? '+' + telNum : (telNum.length > 0 ? T[idiomaActual].prefix + telNum : '');
 
@@ -849,19 +845,9 @@ async function registrar() {
     var instrEl = document.getElementById('instruccion-pantalla');
     if (instrEl) instrEl.style.display = 'flex';
     // Mostrar botón WhatsApp
+    var tgWrap = document.getElementById('telegram-wrap');
+    if (tgWrap) tgWrap.style.display = 'block';
     window._tgMat = mat;
-    // Resetear formulario tras 2s para siguiente conductor
-    setTimeout(function() {
-      document.getElementById('inp-mat').value = '';
-      document.getElementById('inp-tel').value = '';
-      document.getElementById('chk-declaracion').checked = false;
-      document.getElementById('form-err').style.display = 'none';
-      document.getElementById('screen-estado').style.display = 'none';
-      document.getElementById('screen-form').style.display   = 'block';
-      document.getElementById('lang-bar').style.display      = 'flex';
-      despachoId = null;
-      window._tgMat = null;
-    }, 2000);
 
     // Mostrar botón de recibo SIEMPRE
     document.getElementById('btn-recibo').style.display = 'flex';
@@ -881,8 +867,8 @@ async function registrar() {
     }
     // WakeLock automático sin botón
     activarWakeLock();
-    var btnWake = document.getElementById('btn-wake');
-    if (btnWake) btnWake.style.display = 'none';
+    var btnWakeEl = document.getElementById('btn-wake');
+    if (btnWakeEl) btnWakeEl.style.display = 'none';
     var btnWake = document.getElementById('btn-wake');
     if (btnWake) btnWake.style.display = 'none';
 
@@ -1272,6 +1258,7 @@ function descargarRecibo() {
   const declLang = (!esEspanol && t.decl_texto) ? t.decl_texto : '';
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBmMWYzZCIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IndoaXRlIj5DVzwvdGV4dD48L3N2Zz4=">
 <style>
   body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#1a1816}
   .header{border-bottom:3px solid #1a1816;padding-bottom:16px;margin-bottom:24px}
@@ -1560,9 +1547,18 @@ function guardarFavorito() {
 var TG_BOT = 'CustomsWayAduana_bot';
 
 function abrirTelegram() {
-  var mat = (window._tgMat || '').toUpperCase();
+  var mat = window._tgMat || '';
+  var t   = T[idiomaActual];
   var url = 'https://t.me/' + TG_BOT + '?start=' + encodeURIComponent(mat);
-  window.location.href = url;
+  window.open(url, '_blank');
+  var btn = document.getElementById('btn-telegram');
+  if (btn) {
+    btn.style.background = '#1a8ab5';
+    btn.textContent = '✓ Telegram activado';
+    btn.onclick = null;
+  }
+  var hint = document.getElementById('txt-tg-hint');
+  if (hint) hint.textContent = t.tg_activado || 'Recibirás los avisos de tu despacho por Telegram';
 }
 
 // ── FLASH VISUAL (alerta para iOS) ──
