@@ -63,6 +63,7 @@ td{padding:15px 16px;vertical-align:middle}
 .td-mat{font-family:var(--narrow);font-size:24px;font-weight:700;letter-spacing:.06em}
 .td-tel{font-family:var(--narrow);font-size:16px;color:var(--muted);font-weight:500}
 .td-hora{font-family:var(--narrow);font-size:16px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+.td-mercanc{max-width:110px;word-break:break-word}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:4px;font-family:var(--narrow);font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border:1px solid;white-space:nowrap}
 .bp{color:var(--p);background:var(--pbg);border-color:var(--pbd)}
 .bv{color:var(--v);background:var(--vbg);border-color:var(--vbd)}
@@ -949,6 +950,23 @@ function cargarLog(id, panel) {
       }).join('');
       panel.innerHTML = html;
     });
+}
+
+// ── MERCANCÍA ──
+function renderMercancia(r) {
+  var exps = r.expediciones;
+  if (!exps || !exps.length) {
+    var estado = r.bot_estado || '';
+    if (estado === 'completo') return '<span style="color:var(--muted);font-size:10px">Sin datos</span>';
+    return '<span style="color:#f59e0b;font-size:10px;font-weight:700">⏳ Pendiente</span>';
+  }
+  return exps.map(function(e, i) {
+    return '<div style="font-size:9px;line-height:1.4;padding:1px 0;border-bottom:.3mm solid #f0f0f0">'
+      + '<span style="font-weight:700;color:var(--navy)">' + (i+1) + '. </span>'
+      + '<span style="color:var(--text)">' + (e.mercancia || '—') + '</span>'
+      + (e.bultos ? '<br><span style="color:var(--muted)">' + e.bultos + ' blt · ' + e.kilos + ' kg</span>' : '')
+      + '</div>';
+  }).join('');
 }
 
 // ── TOAST ──
