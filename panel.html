@@ -172,7 +172,7 @@ td{padding:15px 16px;vertical-align:middle}
       <thead>
         <tr>
           <th>Matrícula</th><th>Teléfono</th><th>Entrada</th>
-          <th>Circuito</th><th id="th-acc">Asignar circuito</th>
+          <th>Circuito</th><th>Mercancía</th><th id="th-acc">Asignar circuito</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -356,7 +356,7 @@ function renderHoy() {
 function renderTabla(list, conAcc) {
   var tb = document.getElementById('tbody');
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="5"><div class="empty">— Sin vehículos en esta categoría —</div></td></tr>';
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty">— Sin vehículos en esta categoría —</div></td></tr>';
     return;
   }
   var html = '';
@@ -421,6 +421,7 @@ function renderTabla(list, conAcc) {
       + '<td class="td-tel">' + r.telefono + '</td>'
       + '<td class="td-hora">' + hora + '</td>'
       + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + mostradorTag + timer + viendo + '</td>'
+      + '<td class="td-mercanc">' + renderMercancia(r) + '</td>'
       + (conAcc ? '<td>' + acc + '</td>' : '')
       + '</tr>';
   });
