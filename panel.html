@@ -965,7 +965,8 @@ function renderMercancia(r) {
     return '<div style="font-size:9px;line-height:1.4;padding:1px 0;border-bottom:.3mm solid #f0f0f0">'
       + '<span style="font-weight:700;color:var(--navy)">' + (i+1) + '. </span>'
       + '<span style="color:var(--text)">' + (e.mercancia || '—') + '</span>'
-      + (e.bultos ? '<br><span style="color:var(--muted)">' + e.bultos + ' blt · ' + e.kilos + ' kg</span>' : '')
+      + (e.tipo_embalaje ? '<br><span style="color:#0099bb;font-size:8px;font-weight:700">' + e.tipo_embalaje + '</span>' : '')
+      + (e.bultos ? '<br><span style="color:var(--muted)">' + e.bultos + ' ud · ' + e.kilos + ' kg</span>' : '')
       + '</div>';
   }).join('');
 }
