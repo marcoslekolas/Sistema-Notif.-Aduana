@@ -661,16 +661,44 @@ function alertarNueva(r) {
     snd.currentTime = 0;
     snd.play().catch(function() {});
   }
+  // Beep sintetizado de respaldo (no depende de archivo externo)
+  sonarBeep();
 
-  // Notificación del navegador
+  // Notificación del navegador con mercancía declarada
   if (alertasActivas && Notification.permission === 'granted') {
     try {
-      new Notification('Nueva matrícula registrada', {
-        body: r.matricula + ' · ' + r.telefono,
+      var exps = r.expediciones || [];
+      var merc = exps.length
+        ? exps.map(function(e){
+            return e.mercancia + (e.bultos ? ' (' + e.bultos + ' ud' + (e.tipo_embalaje ? ' ' + e.tipo_embalaje : '') + ')' : '');
+          }).join(' · ')
+        : 'Pendiente de declarar';
+      var n = new Notification('🚛 Nueva entrada · ' + r.matricula, {
+        body: 'Mercancía: ' + merc,
         tag: r.id,
+        requireInteraction: true
       });
+      n.onclick = function() { window.focus(); this.close(); };
     } catch(e) {}
   }
+}
+
+// Beep sintetizado con Web Audio (doble tono, sin archivo)
+function sonarBeep() {
+  if (!sonidoActivado) return;
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(1108, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.45);
+  } catch (e) {}
 }
 
 // Auto-activar si ya hay permiso
