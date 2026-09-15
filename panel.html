@@ -87,6 +87,7 @@ td{padding:15px 16px;vertical-align:middle}
 .ab-call{color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe}
 .ab-pause{color:#b45309;background:#fffbeb;border-color:#fde68a}
 .ab-play{color:#166534;background:#f0fdf4;border-color:#86efac}
+.ab-silent{color:#64748b;background:#f8fafc;border-color:#cbd5e1}
 .snd{font-family:var(--narrow);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:0;transition:opacity .2s;white-space:nowrap}
 .snd.show{opacity:1}
 .empty{padding:56px 24px;text-align:center;color:var(--muted);font-family:var(--narrow);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
@@ -434,6 +435,7 @@ function renderTabla(list, conAcc) {
         + extra
         + '<button class="ab ab-call" onclick="llamarMostrador(\'' + r.id + '\',\'' + r.matricula + '\')">📢 Mostrador</button>'
         + btnPausa
+        + '<button class="ab ab-silent" onclick="archivarSilencio(\'' + r.id + '\',\'' + r.matricula + '\')" title="Archivar sin notificar al conductor">🔇 Archivar en silencio</button>'
         + '<span class="snd" id="snd-' + r.id + '">aplicando…</span>'
         + '</div>';
     } else if (conAcc && r.archivado) {
@@ -557,6 +559,26 @@ function asignar(id, circuito, mat) {
       }
       if (snd) snd.classList.remove('show');
     });
+}
+
+function archivarSilencio(id, mat) {
+  if (!confirm('¿Archivar ' + mat + ' en silencio?\n\nEl conductor NO recibirá ninguna notificación. Úsalo solo si el despacho ya se resolvió fuera del sistema.')) return;
+  fetch(SUPABASE_URL + '/rest/v1/despachos?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': ANON_KEY,
+      'Authorization': 'Bearer ' + ANON_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ archivado: true, avisos_pausados: true, mensaje_mostrador: false })
+  }).then(function(r){ return r.ok ? r : r.json().then(function(e){ throw e; }); })
+  .then(function() {
+    toast('🔇 ' + mat + ' archivado en silencio', 'ok');
+    load();
+  }).catch(function() {
+    toast('Error al archivar', 'err');
+  });
 }
 
 function togglePausa(id, pausar, mat) {
