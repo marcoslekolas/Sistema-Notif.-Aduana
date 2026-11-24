@@ -115,6 +115,137 @@ td{padding:15px 16px;vertical-align:middle}
 .log-val{color:var(--text)}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#f0ede6;font-family:var(--narrow);font-size:12px;font-weight:700;letter-spacing:.04em;padding:11px 18px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);transform:translateY(60px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);z-index:300;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}.toast.err{background:#991b1b}.toast.ok{background:#166534}
+
+/* ══════════ TABLET ══════════ */
+@media (max-width:1024px){
+  .topbar{padding:0 16px}
+  .tabs{padding:0 16px}
+  main{padding:16px}
+  .stat{padding:12px 14px;gap:9px}
+  .stat-num{font-size:28px}
+  td{padding:12px 12px}
+  .td-mat{font-size:20px}
+  .ab{padding:9px 13px;font-size:13px}
+}
+
+/* ══════════ MÓVIL — tabla a tarjetas ══════════ */
+@media (max-width:720px){
+  .topbar{height:auto;padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .tb-left{gap:10px}
+  .tb-logo{font-size:14px}
+  .tb-sep,.tb-sub{display:none}
+  .tb-right{gap:10px;flex-wrap:wrap}
+  .clock{display:none}
+  .btn-alerta{padding:8px 12px;font-size:12px}
+
+  /* Stats: cuadrícula compacta 2 columnas */
+  .statsbar{flex-wrap:wrap}
+  .stat{flex:1 1 33%;min-width:33%;padding:10px 12px;border-right:1px solid var(--border2);border-bottom:1px solid var(--border2)}
+  .stat-stripe{height:26px}
+  .stat-num{font-size:24px}
+  .stat-lbl{font-size:10px;letter-spacing:.06em}
+
+  .tabs{padding:0 14px}
+  .tab{padding:12px 18px;font-size:13px}
+
+  /* Toolbar apilada */
+  .toolbar{flex-direction:column;align-items:stretch;gap:10px}
+  .toolbar-left{justify-content:space-between}
+  .filters{flex-wrap:wrap;gap:6px}
+  .fb{flex:1 1 auto;padding:9px 10px;font-size:12px;text-align:center}
+  .btn-export{width:100%}
+  .hist-toolbar{flex-wrap:wrap}
+
+  /* La tabla se convierte en tarjetas apiladas */
+  .tbl-wrap{border:none;border-radius:0;background:transparent;overflow:visible}
+  table,thead,tbody,tr,td{display:block;width:100%}
+  thead{position:absolute;left:-9999px;top:-9999px}   /* ocultar cabecera */
+  tbody tr{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:14px;
+    padding:6px 4px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  tbody tr:hover{background:var(--surface)}
+  tbody tr.archivada .td-mat{text-decoration:line-through}
+
+  td{
+    padding:9px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    border-bottom:1px solid var(--border2);
+    vertical-align:top;
+  }
+  tr td:last-child{border-bottom:none}
+
+  /* Etiqueta de cada celda a la izquierda */
+  td::before{
+    content:attr(data-label);
+    font-family:var(--narrow);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    flex-shrink:0;
+    padding-top:4px;
+  }
+
+  /* Matrícula: protagonista, a lo ancho */
+  .td-mat{
+    flex-direction:column;
+    align-items:stretch;
+    background:var(--bg);
+    margin:-6px -4px 4px;
+    border-radius:12px 12px 0 0;
+    border-bottom:1px solid var(--border);
+    padding:12px 16px;
+  }
+  .td-mat::before{display:none}
+  .td-mat{font-size:28px;line-height:1.1}
+
+  /* Celdas con contenido alineado a la derecha */
+  .td-tel,.td-hora{text-align:right}
+  .td-tel{justify-content:space-between}
+  td[data-label="Circuito"]{flex-wrap:wrap;justify-content:flex-start}
+  .td-mercanc{flex-direction:column;align-items:stretch;white-space:normal}
+  .td-mercanc::before{margin-bottom:4px}
+  .td-mercanc div{white-space:normal!important}
+
+  /* Acciones: botones grandes a lo ancho, fáciles de tocar */
+  td[data-label="Acciones"]{flex-direction:column;align-items:stretch}
+  td[data-label="Acciones"]::before{margin-bottom:6px}
+  .acts{flex-direction:column;align-items:stretch;gap:8px}
+  .ab{
+    padding:14px 16px;
+    font-size:15px;
+    letter-spacing:.04em;
+    width:100%;
+    text-align:center;
+  }
+  .ab-doc{width:auto}
+
+  /* Modal a pantalla casi completa */
+  .modal{width:92vw;max-width:360px;padding:22px}
+  .modal-btn{padding:16px 18px}
+
+  .toast{left:14px;right:14px;bottom:14px;max-width:none;text-align:center}
+
+  /* Log y badges legibles */
+  .log-panel{font-size:12px}
+  .naranja-timer{font-size:14px}
+}
+
+/* ══════════ MÓVIL ESTRECHO ══════════ */
+@media (max-width:420px){
+  .stat{flex:1 1 50%;min-width:50%}
+  .td-mat{font-size:24px}
+  .tb-logo{font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -443,15 +574,15 @@ function renderTabla(list, conAcc) {
     }
 
     html += '<tr class="' + arch + '" id="row-' + r.id + '">'
-      + '<td class="td-mat">' + r.matricula + nuevo + declTag
+      + '<td class="td-mat" data-label="Matrícula">' + r.matricula + nuevo + declTag
         + '<button class="log-btn" onclick="toggleLog(\'' + r.id + '\')" title="Ver historial de cambios">📋</button>'
         + '<div class="log-panel" id="log-' + r.id + '"><span style="color:var(--muted);font-size:11px">Cargando…</span></div>'
         + '</td>'
-      + '<td class="td-tel">' + r.telefono + '</td>'
-      + '<td class="td-hora">' + hora + '</td>'
-      + '<td><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + mostradorTag + pausaTag + timer + viendo + '</td>'
-      + '<td class="td-mercanc">' + renderMercancia(r) + '</td>'
-      + (conAcc ? '<td>' + acc + '</td>' : '')
+      + '<td class="td-tel" data-label="Teléfono">' + (r.telefono || '<span style="opacity:.4">—</span>') + '</td>'
+      + '<td class="td-hora" data-label="Entrada">' + hora + '</td>'
+      + '<td data-label="Circuito"><span class="badge ' + bi.cls + '">' + bi.lbl + '</span>' + prevTag + mostradorTag + pausaTag + timer + viendo + '</td>'
+      + '<td class="td-mercanc" data-label="Mercancía">' + renderMercancia(r) + '</td>'
+      + (conAcc ? '<td data-label="Acciones">' + acc + '</td>' : '')
       + '</tr>';
   });
   tb.innerHTML = html;
